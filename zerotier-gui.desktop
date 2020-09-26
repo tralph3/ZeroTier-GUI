@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Exec=/usr/bin/zerotier-gui
+Icon=zerotier-gui
+Type=Application
+Terminal=false
+Comment=Linux front-end for ZeroTier
+Name=ZeroTier GUI
+GenericName=ZeroTier GUI
+StartupNotify=false
+Categories=Accessories

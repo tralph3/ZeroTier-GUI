@@ -1,4 +1,4 @@
-#!/usr/bin/sudo python3
+#!/usr/bin/env python3
 #
 #A Linux front-end for ZeroTier
 #Copyright (C) 2020  Tomás Ralph
@@ -23,9 +23,11 @@
 #                                #
 ##################################
 
-import json, subprocess
+import json
+from subprocess import check_output, STDOUT, CalledProcessError
 import tkinter as tk
 from tkinter import messagebox
+from os import getuid, system
 
 class MainWindow:
 
@@ -98,7 +100,7 @@ class MainWindow:
 			self.networkList.insert('end', '{} | {:55s} |{}'.format(networkId, networkName, networkStatus))
 
 	def get_networks_info(self):
-		return json.loads(subprocess.check_output(['zerotier-cli', '-j', 'listnetworks']))
+		return json.loads(check_output(['zerotier-cli', '-j', 'listnetworks']))
 
 	def launch_sub_window(self):
 		return tk.Toplevel(self.window)
@@ -108,7 +110,7 @@ class MainWindow:
 		def join_network(network):
 
 			try:
-				subprocess.check_output(['zerotier-cli', 'join', network])
+				check_output(['zerotier-cli', 'join', network])
 				joinResult = "Successfully joined network"
 			except:
 				joinResult = "Invalid network ID"
@@ -140,7 +142,7 @@ class MainWindow:
 		network = network[:network.find(" ")]
 
 		try:
-			subprocess.check_output(['zerotier-cli', 'leave', network])
+			check_output(['zerotier-cli', 'leave', network])
 			leaveResult = "Successfully left network"
 		except:
 			leaveResult = "Error"
@@ -253,19 +255,52 @@ class MainWindow:
 			else:
 				value = 0
 
-			subprocess.check_output(['zerotier-cli', 'set', currentNetworkInfo['nwid'], f"{config}={value}"])
+			check_output(['zerotier-cli', 'set', currentNetworkInfo['nwid'], f"{config}={value}"])
 
 		# needed to stop local variables from being destroyed before the window
 		infoWindow.mainloop()
 
 if __name__ == "__main__":
 
+	def warning_window():
+		if getuid() != 0:
+
+			# get username
+			username = check_output(['whoami']).decode()
+			username = username.replace("\n", "")
+
+			if messagebox.askyesno(icon="info", title="Root access needed", message=f"In order to grant {username} access to ZeroTier we need temporary root access to store the Auth Token in your home folder. Otherwise, you would need to run this program as root. Grant access?"):
+
+				# copy auth token to home directory and make the user own it
+				system(f'pkexec bash -c "cp /var/lib/zerotier-one/authtoken.secret /home/{username}/.zeroTierOneAuthToken && chown {username} /home/{username}/.zeroTierOneAuthToken && chmod 0600 /home/{username}/.zeroTierOneAuthToken"')
+
+			else:
+				exit()
+
+	# temporary window for popups
+	root = tk.Tk()
+	root.withdraw()
+
 	# simple check for zerotier
 	try:
-		subprocess.check_output(['zerotier-cli', '-j', 'listnetworks'])
-	except:
-		messagebox.showinfo(title="Error", message="The program hasn't been ran as root, or ZeroTier isn't installed or properly configured! Make sure the service 'zerotier-one' is running.", icon="error")
+		check_output(['zerotier-cli', 'listnetworks'], stderr=STDOUT)
+
+	except CalledProcessError as error:
+		output = error.output.decode()
+
+		if "missing authentication token" in output:
+			messagebox.showinfo(title="Error", message="This user doesn't have access to ZeroTier!", icon="error")
+			warning_window()
+		elif "Error connecting" in output:
+			messagebox.showinfo(title="Error", message='"zerotier-one" service isn\'t running!', icon="error")
+			exit()
+
+	except FileNotFoundError:
+		messagebox.showinfo(title="Error", message="ZeroTier isn't installed!", icon="error")
 		exit()
+
+	# destroy temporary window
+	root.destroy()
 
 	# create mainwindow class and execute the mainloop
 	mainWindow = MainWindow().window

@@ -1,6 +1,6 @@
 #!/usr/bin/sudo python3
 #
-#Create .cue and .m3u files for your roms
+#A Linux front-end for ZeroTier
 #Copyright (C) 2020  Tomás Ralph
 #
 #This program is free software: you can redistribute it and/or modify

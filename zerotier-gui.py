@@ -264,7 +264,7 @@ if __name__ == "__main__":
 	try:
 		subprocess.check_output(['zerotier-cli', '-j', 'listnetworks'])
 	except:
-		messagebox.showinfo(title="Error", message="ZeroTier isn't installed or properly configured! Make sure the service 'zerotier-one' is running.", icon="error")
+		messagebox.showinfo(title="Error", message="The program hasn't been ran as root, or ZeroTier isn't installed or properly configured! Make sure the service 'zerotier-one' is running.", icon="error")
 		exit()
 
 	# create mainwindow class and execute the mainloop

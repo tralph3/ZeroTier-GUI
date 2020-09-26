@@ -43,7 +43,7 @@ class MainWindow:
 		self.bottomFrame = tk.Frame(self.window, padx = 20, pady = 10)
 
 		# widgets
-		self.networkLabel = tk.Label(self.topFrame, text="Joined Networks:")
+		self.networkLabel = tk.Label(self.topFrame, text="Joined Networks:", font=40)
 		self.refreshButton = tk.Button(self.topFrame, text="Refresh Networks", bg="#ffb253", activebackground="#ffbf71", command=self.refresh_networks)
 		self.joinButton = tk.Button(self.topFrame, text="Join Network", bg="#ffb253", activebackground="#ffbf71", command=self.join_network_window)
 
@@ -186,7 +186,7 @@ class MainWindow:
 			assignedAddresses += address + " "
 
 		# widgets
-		titleLabel = tk.Label(topFrame, text="Network Info")
+		titleLabel = tk.Label(topFrame, text="Network Info", font=70)
 
 		nameLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Name:", currentNetworkInfo['name']))
 		nwIdLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Network ID:", currentNetworkInfo['nwid']))
@@ -256,13 +256,7 @@ class MainWindow:
 			subprocess.check_output(['zerotier-cli', 'set', currentNetworkInfo['nwid'], f"{config}={value}"])
 
 		# needed to stop local variables from being destroyed before the window
-		self.launch_central_instance()
 		infoWindow.mainloop()
-
-	def launch_central_instance(self):
-		print("called!")
-
-
 
 if __name__ == "__main__":
 

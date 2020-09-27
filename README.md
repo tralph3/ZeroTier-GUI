@@ -5,3 +5,8 @@
 **A Linux front-end for ZeroTier**
 
 <img src="https://i.imgur.com/eNFpFyO.png" width="1000">
+
+
+# Dependencies
+
+* GLIBC 2.31 or greater (check with `ldd --version`)

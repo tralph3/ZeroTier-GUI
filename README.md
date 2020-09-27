@@ -9,4 +9,9 @@
 
 # Dependencies
 
+## Compiled
 * GLIBC 2.31 or greater (check with `ldd --version`)
+
+## Source
+* Python 3.8
+* Tkinter module (sometimes doesn't come pre-installed, it's in the `python3-tk` package)

@@ -4,4 +4,4 @@
 
 **A Linux front-end for ZeroTier**
 
-<img src="https://i.imgur.com/ewRfQXp.png" width="1000">
+<img src="https://i.imgur.com/NWNcRhg.png" width="1000">

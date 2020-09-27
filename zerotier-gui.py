@@ -23,11 +23,12 @@
 #                                #
 ##################################
 
-import json
-from subprocess import check_output, STDOUT, CalledProcessError
 import tkinter as tk
 from tkinter import messagebox
+from subprocess import check_output, STDOUT, CalledProcessError
+from json import loads
 from os import getuid, system
+from webbrowser import open_new_tab
 
 class MainWindow:
 
@@ -36,7 +37,7 @@ class MainWindow:
 		# create widgets
 		# window setup
 		self.window = tk.Tk()
-		self.window.title("ZeroTier One")
+		self.window.title("ZeroTier")
 		self.window.resizable(width = False, height = False)
 
 		# layout setup
@@ -54,6 +55,8 @@ class MainWindow:
 		self.networkList.bind('<Double-Button-1>', self.call_see_network_info)
 
 		self.leaveButton = tk.Button(self.bottomFrame, text="Leave Network", bg="#ffb253", activebackground="#ffbf71", command=self.leave_network)
+		self.ztCentralButton = tk.Button(self.bottomFrame, text="ZeroTier Central", bg="#ffb253", activebackground="#ffbf71", command=self.zt_central)
+		self.toggleConnectionButton = tk.Button(self.bottomFrame, text="Disconnect/Connect Interface", bg="#ffb253", activebackground="#ffbf71", command=self.toggle_interface_connection)
 		self.infoButton = tk.Button(self.bottomFrame, text="Network Info", bg="#ffb253", activebackground="#ffbf71", command=self.see_network_info)
 
 		# pack widgets
@@ -65,6 +68,8 @@ class MainWindow:
 		self.networkList.pack(side="bottom", fill="x")
 
 		self.leaveButton.pack(side="left", fill="x")
+		self.toggleConnectionButton.pack(side="left", fill="x")
+		self.ztCentralButton.pack(side="right", fill="x")
 		self.infoButton.pack(side="right", fill="x")
 
 		# frames
@@ -78,6 +83,9 @@ class MainWindow:
 		self.networkList.config(yscrollcommand=self.networkListScrollbar.set)
 		self.networkListScrollbar.config(command=self.networkList.yview)
 
+	def zt_central(self):
+		open_new_tab("https://my.zerotier.com")
+
 	def call_see_network_info(self, event):
 		self.see_network_info()
 
@@ -89,18 +97,28 @@ class MainWindow:
 		networkData = self.get_networks_info()
 
 		# get networks id
-		for network in range(len(networkData)):
-			networks.append((networkData[network]['nwid'], networkData[network]['name'], networkData[network]['status']))
+		for networkPosition in range(len(networkData)):
 
+			if self.get_interface_state(networkData[networkPosition]['portDeviceName']).lower() == "down":
+				isDown = True
+			else:
+				isDown = False
+
+			networks.append((networkData[networkPosition]['nwid'], networkData[networkPosition]['name'], networkData[networkPosition]['status'], isDown, networkPosition))
 
 		# set networks in widget
-		for networkId, networkName, networkStatus in networks:
+		for networkId, networkName, networkStatus, isDown, networkPosition in networks:
+
 			if not networkName:
 				networkName = "No name"
 			self.networkList.insert('end', '{} | {:55s} |{}'.format(networkId, networkName, networkStatus))
 
+			if isDown:
+				self.networkList.itemconfig(networkPosition, bg='red')
+
 	def get_networks_info(self):
-		return json.loads(check_output(['zerotier-cli', '-j', 'listnetworks']))
+		# json.loads
+		return loads(check_output(['zerotier-cli', '-j', 'listnetworks']))
 
 	def launch_sub_window(self):
 		return tk.Toplevel(self.window)
@@ -149,6 +167,40 @@ class MainWindow:
 		messagebox.showinfo(icon="info", message=leaveResult)
 		self.refresh_networks()
 
+	def get_interface_state(self, interface):
+
+		addressesInfo = check_output(['ip', 'address']).decode()
+
+		stateLine = addressesInfo.find(interface)
+		stateStart = addressesInfo.find("state ", stateLine)
+		stateEnd = addressesInfo.find(" ", stateStart + 6)
+		state = addressesInfo[stateStart + 6:stateEnd]
+
+		return state
+
+	def toggle_interface_connection(self):
+
+		# setting up
+		try:
+			idInList = self.networkList.curselection()[0]
+		except:
+			messagebox.showinfo(icon="info", title="Error", message="No network selected")
+			return
+
+		# id in list will always be the same as id in json
+		# because the list is generated in the same order
+		currentNetworkInfo = self.get_networks_info()[idInList]
+		currentNetworkInterface = currentNetworkInfo['portDeviceName']
+
+		state = self.get_interface_state(currentNetworkInterface)
+
+		if state.lower() == "down":
+			check_output(['pkexec', 'ip', 'link', 'set', currentNetworkInterface, 'up'])
+		else:
+			check_output(['pkexec', 'ip', 'link', 'set', currentNetworkInterface, 'down'])
+
+		self.refresh_networks()
+
 	def see_network_info(self):
 
 		# setting up
@@ -161,6 +213,7 @@ class MainWindow:
 		infoWindow = self.launch_sub_window()
 
 		# id in list will always be the same as id in json
+		# because the list is generated in the same order
 		currentNetworkInfo = self.get_networks_info()[idInList]
 
 		# frames
@@ -183,9 +236,9 @@ class MainWindow:
 		allowManaged.set(currentNetworkInfo['allowManaged'])
 
 		# assigned addresses text generation
-		assignedAddresses = ""
-		for address in currentNetworkInfo['assignedAddresses']:
-			assignedAddresses += address + " "
+		assignedAddresses = currentNetworkInfo['assignedAddresses'][0]
+		for address in currentNetworkInfo['assignedAddresses'][1:]:
+			assignedAddresses += "\n{:>42s}".format(address)
 
 		# widgets
 		titleLabel = tk.Label(topFrame, text="Network Info", font=70)
@@ -194,6 +247,7 @@ class MainWindow:
 		nwIdLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Network ID:", currentNetworkInfo['nwid']))
 		assignedAddrLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Assigned Addresses:", assignedAddresses))
 		statusLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Status:", currentNetworkInfo['status']))
+		stateLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("State:", self.get_interface_state(currentNetworkInfo['portDeviceName'])))
 		typeLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Type:", currentNetworkInfo['type']))
 		deviceLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Device:", currentNetworkInfo['portDeviceName']))
 		bridgeLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Bridge:", currentNetworkInfo['bridge']))
@@ -210,7 +264,7 @@ class MainWindow:
 		allowManagedLabel = tk.Label(allowManagedFrame, font="Monospace", text="{:24s}".format("Allow Managed IP"))
 		allowManagedCheck = tk.Checkbutton(allowManagedFrame, variable=allowManaged, command=lambda: change_config("allowManaged", allowManaged.get()))
 
-		closeButton = tk.Button(bottomFrame, text="Ok", bg="#ffb253", activebackground="#ffbf71", command=lambda: infoWindow.destroy())
+		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253", activebackground="#ffbf71", command=lambda: infoWindow.destroy())
 
 		# pack widgets
 		titleLabel.pack(side="top", anchor="n")
@@ -219,6 +273,7 @@ class MainWindow:
 		nwIdLabel.pack(side="top", anchor="w")
 		assignedAddrLabel.pack(side="top", anchor="w")
 		statusLabel.pack(side="top", anchor="w")
+		stateLabel.pack(side="top", anchor="w")
 		typeLabel.pack(side="top", anchor="w")
 		deviceLabel.pack(side="top", anchor="w")
 		bridgeLabel.pack(side="top", anchor="w")
@@ -278,8 +333,8 @@ if __name__ == "__main__":
 				exit()
 
 	# temporary window for popups
-	root = tk.Tk()
-	root.withdraw()
+	tmp = tk.Tk()
+	tmp.withdraw()
 
 	# simple check for zerotier
 	try:
@@ -300,7 +355,7 @@ if __name__ == "__main__":
 		exit()
 
 	# destroy temporary window
-	root.destroy()
+	tmp.destroy()
 
 	# create mainwindow class and execute the mainloop
 	mainWindow = MainWindow().window

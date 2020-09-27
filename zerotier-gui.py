@@ -69,8 +69,8 @@ class MainWindow:
 
 		self.leaveButton.pack(side="left", fill="x")
 		self.toggleConnectionButton.pack(side="left", fill="x")
-		self.ztCentralButton.pack(side="right", fill="x")
 		self.infoButton.pack(side="right", fill="x")
+		self.ztCentralButton.pack(side="right", fill="x")
 
 		# frames
 		self.topFrame.pack(side="top", fill="x")

@@ -114,7 +114,7 @@ class MainWindow:
 			self.networkList.insert('end', '{} | {:55s} |{}'.format(networkId, networkName, networkStatus))
 
 			if isDown:
-				self.networkList.itemconfig(networkPosition, bg='red')
+				self.networkList.itemconfig(networkPosition, bg='red', selectbackground='#de0303')
 
 	def get_networks_info(self):
 		# json.loads

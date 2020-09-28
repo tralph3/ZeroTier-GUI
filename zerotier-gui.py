@@ -42,27 +42,58 @@ class MainWindow:
 
 		# layout setup
 		self.topFrame = tk.Frame(self.window, padx = 20, pady = 10)
+		self.topBottomFrame = tk.Frame(self.window, padx = 20)
 		self.middleFrame = tk.Frame(self.window, padx = 20)
 		self.bottomFrame = tk.Frame(self.window, padx = 20, pady = 10)
 
 		# widgets
 		self.networkLabel = tk.Label(self.topFrame, text="Joined Networks:", font=40)
-		self.refreshButton = tk.Button(self.topFrame, text="Refresh Networks", bg="#ffb253", activebackground="#ffbf71", command=self.refresh_networks)
-		self.joinButton = tk.Button(self.topFrame, text="Join Network", bg="#ffb253", activebackground="#ffbf71", command=self.join_network_window)
+		self.refreshButton = tk.Button(self.topFrame, text="Refresh Networks", bg="#ffb253", activebackground="#ffbf71",
+			command=self.refresh_networks
+		)
+		self.statusButton = tk.Button(self.topFrame, text="Status", bg="#ffb253", activebackground="#ffbf71",
+			command=self.status_window
+		)
+		self.peersButton = tk.Button(self.topFrame, text="Show Peers", bg="#ffb253", activebackground="#ffbf71",
+			command=self.see_peers
+		)
+		self.joinButton = tk.Button(self.topFrame, text="Join Network", bg="#ffb253", activebackground="#ffbf71",
+			command=self.join_network_window
+		)
 
-		self.networkListScrollbar = tk.Scrollbar(self.middleFrame)
-		self.networkList = tk.Listbox(self.middleFrame, width="100", height="15", font="Monospace", selectmode="single")
+		self.tableLabels = tk.Label(self.topBottomFrame, font="Monospace",  bg="grey",
+			text="{:19s}{:57s}{:26}".format("ID", "Name", "Status")
+		)
+
+		self.networkListScrollbar = tk.Scrollbar(self.middleFrame, bd=2)
+
+		self.networkList = tk.Listbox(self.middleFrame, width="100", height="15",
+			font="Monospace", selectmode="single", relief="flat"
+		)
+
 		self.networkList.bind('<Double-Button-1>', self.call_see_network_info)
 
-		self.leaveButton = tk.Button(self.bottomFrame, text="Leave Network", bg="#ffb253", activebackground="#ffbf71", command=self.leave_network)
-		self.ztCentralButton = tk.Button(self.bottomFrame, text="ZeroTier Central", bg="#ffb253", activebackground="#ffbf71", command=self.zt_central)
-		self.toggleConnectionButton = tk.Button(self.bottomFrame, text="Disconnect/Connect Interface", bg="#ffb253", activebackground="#ffbf71", command=self.toggle_interface_connection)
-		self.infoButton = tk.Button(self.bottomFrame, text="Network Info", bg="#ffb253", activebackground="#ffbf71", command=self.see_network_info)
+		self.leaveButton = tk.Button(self.bottomFrame, text="Leave Network", bg="#ffb253",
+			activebackground="#ffbf71", command=self.leave_network
+		)
+		self.ztCentralButton = tk.Button(self.bottomFrame, text="ZeroTier Central", bg="#ffb253",
+			activebackground="#ffbf71", command=self.zt_central
+		)
+		self.toggleConnectionButton = tk.Button(self.bottomFrame, text="Disconnect/Connect Interface", bg="#ffb253",
+			activebackground="#ffbf71", command=self.toggle_interface_connection
+		)
+		self.infoButton = tk.Button(self.bottomFrame, text="Network Info", bg="#ffb253",
+			activebackground="#ffbf71", command=self.see_network_info
+		)
 
 		# pack widgets
 		self.networkLabel.pack(side="left", anchor="sw")
 		self.refreshButton.pack(side="right", anchor="se")
+		self.statusButton.pack(side="right", anchor="sw")
+		self.peersButton.pack(side="right", anchor="sw")
 		self.joinButton.pack(side="right", anchor="se")
+
+		self.tableLabels.pack(side="left", fill="x")
 
 		self.networkListScrollbar.pack(side="right", fill="both")
 		self.networkList.pack(side="bottom", fill="x")
@@ -74,6 +105,7 @@ class MainWindow:
 
 		# frames
 		self.topFrame.pack(side="top", fill="x")
+		self.topBottomFrame.pack(side="top", fill="x")
 		self.middleFrame.pack(side = "top", fill = "x")
 		self.bottomFrame.pack(side = "top", fill = "x")
 
@@ -89,6 +121,66 @@ class MainWindow:
 	def call_see_network_info(self, event):
 		self.see_network_info()
 
+	def refresh_paths(self, pathsList, idInList):
+
+		pathsList.delete(0, 'end')
+		paths = []
+		# outputs info of paths in json format
+		pathsData = self.get_peers_info()[idInList]['paths']
+
+		# get paths information in a list of tuples
+		for pathPosition in range(len(pathsData)):
+			paths.append((
+				pathsData[pathPosition]['active'],
+				pathsData[pathPosition]['address'],
+				pathsData[pathPosition]['expired'],
+				pathsData[pathPosition]['lastReceive'],
+				pathsData[pathPosition]['lastSend'],
+				pathsData[pathPosition]['preferred'],
+				pathsData[pathPosition]['trustedPathId']
+			))
+
+		# set paths in listbox
+		for pathActive, pathAddress, pathExpired, pathLastReceive, pathLastSend, pathPreferred, pathTrustedId in paths:
+			pathsList.insert('end', '{:6s} | {:44s} | {:7s} | {:13s} | {:13s} | {:9s} | {}'.format(
+																				str(pathActive),
+																				str(pathAddress),
+																				str(pathExpired),
+																				str(pathLastReceive),
+																				str(pathLastSend),
+																				str(pathPreferred),
+																				str(pathTrustedId)
+																			))
+
+	def refresh_peers(self, peersList):
+
+		peersList.delete(0, 'end')
+		peers = []
+		# outputs info of peers in json format
+		peersData = self.get_peers_info()
+
+		# get peers information in a list of tuples
+		for peerPosition in range(len(peersData)):
+			peers.append((
+				peersData[peerPosition]['address'],
+				peersData[peerPosition]['version'],
+				peersData[peerPosition]['role'],
+				peersData[peerPosition]['latency']
+			))
+
+		# set peers in listbox
+		for peerAddress, peerVersion, peerRole, peerLatency in peers:
+
+			if peerVersion == "-1.-1.-1":
+				peerVersion = "-"
+			peersList.insert('end', '{} | {:10s} | {:10s} | {:4s}'.format(
+																			peerAddress,
+																			peerVersion,
+																			peerRole,
+																			str(peerLatency)
+																		)
+							)
+
 	def refresh_networks(self):
 
 		self.networkList.delete(0, 'end')
@@ -96,7 +188,7 @@ class MainWindow:
 		# outputs info of networks in json format
 		networkData = self.get_networks_info()
 
-		# get networks id
+		# gets networks information in a list of tuples
 		for networkPosition in range(len(networkData)):
 
 			if self.get_interface_state(networkData[networkPosition]['portDeviceName']).lower() == "down":
@@ -104,9 +196,15 @@ class MainWindow:
 			else:
 				isDown = False
 
-			networks.append((networkData[networkPosition]['nwid'], networkData[networkPosition]['name'], networkData[networkPosition]['status'], isDown, networkPosition))
+			networks.append((
+				networkData[networkPosition]['nwid'],
+				networkData[networkPosition]['name'],
+				networkData[networkPosition]['status'],
+				isDown,
+				networkPosition
+			))
 
-		# set networks in widget
+		# set networks in listbox
 		for networkId, networkName, networkStatus, isDown, networkPosition in networks:
 
 			if not networkName:
@@ -120,8 +218,16 @@ class MainWindow:
 		# json.loads
 		return loads(check_output(['zerotier-cli', '-j', 'listnetworks']))
 
-	def launch_sub_window(self):
-		return tk.Toplevel(self.window)
+	def get_peers_info(self):
+		# json.loads
+		return loads(check_output(['zerotier-cli', '-j', 'peers']))
+
+	def launch_sub_window(self, title):
+		subWindow = tk.Toplevel(self.window)
+		subWindow.title(title)
+		subWindow.resizable(width = False, height = False)
+
+		return subWindow
 
 	def join_network_window(self):
 
@@ -137,14 +243,16 @@ class MainWindow:
 
 			joinWindow.destroy()
 
-		joinWindow = self.launch_sub_window()
+		joinWindow = self.launch_sub_window("Join Network")
 
 		# widgets
 		mainFrame = tk.Frame(joinWindow, padx = 20, pady = 20)
 
 		joinLabel = tk.Label(mainFrame, text="Network ID:")
 		networkIdEntry = tk.Entry(mainFrame, font="Monospace")
-		joinButton = tk.Button(mainFrame, text="Join", bg="#ffb253", activebackground="#ffbf71", command=lambda: join_network(networkIdEntry.get()))
+		joinButton = tk.Button(mainFrame, text="Join", bg="#ffb253", activebackground="#ffbf71",
+			command=lambda: join_network(networkIdEntry.get())
+		)
 
 		# pack widgets
 		joinLabel.pack(side="top", anchor="w")
@@ -164,8 +272,59 @@ class MainWindow:
 			leaveResult = "Successfully left network"
 		except:
 			leaveResult = "Error"
+
 		messagebox.showinfo(icon="info", message=leaveResult)
 		self.refresh_networks()
+
+	def get_status(self):
+
+		status = check_output(['zerotier-cli', 'status']).decode()
+		status = status.split()
+
+		# returns a list with status info
+		return status
+
+	def status_window(self):
+
+		statusWindow = self.launch_sub_window("Status")
+		status = self.get_status()
+
+		# frames
+		topFrame = tk.Frame(statusWindow, padx=20, pady=30)
+		middleFrame = tk.Frame(statusWindow, padx=20, pady=10)
+		bottomFrame = tk.Frame(statusWindow, padx=20, pady=10)
+
+		# widgets
+		titleLabel = tk.Label(topFrame, text="Status", font=70)
+
+		ztAddrLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("ZeroTier Address:", status[2])
+		)
+		versionLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("ZeroTier Version:", status[3])
+		)
+		statusLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("Status:", status[4])
+		)
+
+		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253", activebackground="#ffbf71",
+			command=lambda: statusWindow.destroy()
+		)
+
+		# pack widgets
+		titleLabel.pack(side="top", anchor="n")
+
+		ztAddrLabel.pack(side="top", anchor="w")
+		versionLabel.pack(side="top", anchor="w")
+		statusLabel.pack(side="top", anchor="w")
+
+		closeButton.pack(side="top")
+
+		topFrame.pack(side="top", fill="both")
+		middleFrame.pack(side="top", fill="both")
+		bottomFrame.pack(side="top", fill="both")
+
+		statusWindow.mainloop()
 
 	def get_interface_state(self, interface):
 
@@ -173,6 +332,7 @@ class MainWindow:
 
 		stateLine = addressesInfo.find(interface)
 		stateStart = addressesInfo.find("state ", stateLine)
+		# 6 is the offset for the "state" word
 		stateEnd = addressesInfo.find(" ", stateStart + 6)
 		state = addressesInfo[stateStart + 6:stateEnd]
 
@@ -201,6 +361,126 @@ class MainWindow:
 
 		self.refresh_networks()
 
+	def see_peer_paths(self, peerList):
+
+		# setting up
+		try:
+			idInList = peerList.curselection()[0]
+		except:
+			messagebox.showinfo(icon="info", title="Error", message="No peer selected")
+			return
+
+		pathsWindow = self.launch_sub_window("Peer Path")
+
+		# frames
+		topFrame = tk.Frame(pathsWindow, padx = 20)
+		middleFrame = tk.Frame(pathsWindow, padx = 20)
+		bottomFrame = tk.Frame(pathsWindow, padx = 20, pady = 10)
+
+		# widgets
+		tableLabels = tk.Label(topFrame, font="Monospace", bg="grey",
+			text="{:9s}{:47s}{:10s}{:16s}{:16s}{:12s}{:17s}".format(
+													"Active",
+													"Address",
+													"Expired",
+													"Last Receive",
+													"Last Send",
+													"Preferred",
+													"Trusted Path ID"
+												)
+		)
+
+		pathsListScrollbar = tk.Scrollbar(middleFrame, bd=2)
+		pathsList = tk.Listbox(middleFrame, height="15", font="Monospace", selectmode="single", relief="flat")
+
+		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253", activebackground="#ffbf71",
+			command=lambda: pathsWindow.destroy()
+		)
+		refreshButton = tk.Button(bottomFrame, text="Refresh Paths", bg="#ffb253", activebackground="#ffbf71",
+			command=lambda: self.refresh_paths(pathsList, idInList)
+		)
+
+		# pack widgets
+		tableLabels.pack(side="left", fill="both")
+
+		pathsListScrollbar.pack(side="right", fill="both")
+		pathsList.pack(side="bottom", fill="x")
+
+		closeButton.pack(side="left", fill="x")
+		refreshButton.pack(side="right", fill="x")
+
+		topFrame.pack(side="top", fill="x", pady = (30, 0))
+		middleFrame.pack(side="top", fill="x")
+		bottomFrame.pack(side="top", fill="x")
+
+
+		# extra configuration
+		self.refresh_paths(pathsList, idInList)
+
+		pathsList.config(yscrollcommand=pathsListScrollbar.set)
+		pathsListScrollbar.config(command=pathsList.yview)
+
+		pathsWindow.mainloop()
+
+
+	def see_peers(self):
+
+		peersWindow = self.launch_sub_window("Peers")
+		peersInfo = self.get_peers_info()
+
+		# frames
+		topFrame = tk.Frame(peersWindow, padx = 20)
+		middleFrame = tk.Frame(peersWindow, padx = 20)
+		bottomFrame = tk.Frame(peersWindow, padx = 20, pady = 10)
+
+		# widgets
+		tableLabels = tk.Label(topFrame, font="Monospace", bg="grey",
+			text="{:13s}{:13s}{:13s}{:13s}".format(
+													"ZT Address",
+													"Version",
+													"Role",
+													"Latency"
+												)
+							)
+
+		peersListScrollbar = tk.Scrollbar(middleFrame, bd=2)
+		peersList = tk.Listbox(middleFrame, width="50", height="15",
+			font="Monospace", selectmode="single", relief="flat"
+		)
+
+		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253",
+			activebackground="#ffbf71", command=lambda: peersWindow.destroy()
+		)
+		refreshButton = tk.Button(bottomFrame, text="Refresh Peers", bg="#ffb253",
+			activebackground="#ffbf71", command=lambda: self.refresh_peers(peersList)
+		)
+		seePathsButton = tk.Button(bottomFrame, text="See Paths", bg="#ffb253",
+			activebackground="#ffbf71", command=lambda: self.see_peer_paths(peersList)
+		)
+
+		# pack widgets
+		tableLabels.pack(side="left", fill="both")
+
+		peersListScrollbar.pack(side="right", fill="both")
+		peersList.pack(side="bottom", fill="x")
+
+		closeButton.pack(side="left", fill="x")
+		refreshButton.pack(side="right", fill="x")
+		seePathsButton.pack(side="right", fill="x")
+
+		topFrame.pack(side="top", fill="x", pady = (30, 0))
+		middleFrame.pack(side="top", fill="x")
+		bottomFrame.pack(side="top", fill="x")
+
+
+		# extra configuration
+		self.refresh_peers(peersList)
+
+		peersList.config(yscrollcommand=peersListScrollbar.set)
+		peersListScrollbar.config(command=peersList.yview)
+
+		peersWindow.mainloop()
+
 	def see_network_info(self):
 
 		# setting up
@@ -210,7 +490,7 @@ class MainWindow:
 			messagebox.showinfo(icon="info", title="Error", message="No network selected")
 			return
 
-		infoWindow = self.launch_sub_window()
+		infoWindow = self.launch_sub_window("Network Info")
 
 		# id in list will always be the same as id in json
 		# because the list is generated in the same order
@@ -236,9 +516,12 @@ class MainWindow:
 		allowManaged.set(currentNetworkInfo['allowManaged'])
 
 		# assigned addresses text generation
-		assignedAddresses = currentNetworkInfo['assignedAddresses'][0]
-		for address in currentNetworkInfo['assignedAddresses'][1:]:
-			assignedAddresses += "\n{:>42s}".format(address)
+		try:
+			assignedAddresses = currentNetworkInfo['assignedAddresses'][0]
+			for address in currentNetworkInfo['assignedAddresses'][1:]:
+				assignedAddresses += "\n{:>42s}".format(address)
+		except IndexError:
+			assignedAddresses = "-"
 
 		# widgets
 		titleLabel = tk.Label(topFrame, text="Network Info", font=70)

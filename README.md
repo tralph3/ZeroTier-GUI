@@ -4,8 +4,16 @@
 
 **A Linux front-end for ZeroTier**
 
-<img src="https://i.imgur.com/eNFpFyO.png" width="1000">
 
+**Manage Networks**
+
+
+<img src="https://i.imgur.com/Na2VFl5.png" width="1000">
+<img src="https://i.imgur.com/Zs7sTOo.png" width="1000">
+
+**Manage Peers**
+
+<img src="https://i.imgur.com/SimjByN.png" width="500">
 
 # Dependencies
 

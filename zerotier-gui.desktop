@@ -8,4 +8,4 @@ Comment=Linux front-end for ZeroTier
 Name=ZeroTier GUI
 GenericName=ZeroTier GUI
 StartupNotify=false
-Categories=Accessories
+Categories=Utility;

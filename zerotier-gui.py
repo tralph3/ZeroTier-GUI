@@ -27,7 +27,7 @@ import tkinter as tk
 from tkinter import messagebox
 from subprocess import check_output, STDOUT, CalledProcessError
 from json import loads
-from os import getuid, system
+from os import getuid, system, _exit
 from webbrowser import open_new_tab
 
 class MainWindow:
@@ -48,21 +48,17 @@ class MainWindow:
 
 		# widgets
 		self.networkLabel = tk.Label(self.topFrame, text="Joined Networks:", font=40)
-		self.refreshButton = tk.Button(self.topFrame, text="Refresh Networks", bg="#ffb253", activebackground="#ffbf71",
-			command=self.refresh_networks
-		)
-		self.statusButton = tk.Button(self.topFrame, text="Status", bg="#ffb253", activebackground="#ffbf71",
-			command=self.status_window
-		)
-		self.peersButton = tk.Button(self.topFrame, text="Show Peers", bg="#ffb253", activebackground="#ffbf71",
-			command=self.see_peers
-		)
-		self.joinButton = tk.Button(self.topFrame, text="Join Network", bg="#ffb253", activebackground="#ffbf71",
-			command=self.join_network_window
-		)
+		self.refreshButton = tk.Button(self.topFrame, text="Refresh Networks", bg="#ffb253",
+			activebackground="#ffbf71", command=self.refresh_networks)
+		self.aboutButton = tk.Button(self.topFrame, text="About", bg="#ffb253",
+			activebackground="#ffbf71", command=self.about_window)
+		self.peersButton = tk.Button(self.topFrame, text="Show Peers", bg="#ffb253",
+			activebackground="#ffbf71", command=self.see_peers)
+		self.joinButton = tk.Button(self.topFrame, text="Join Network", bg="#ffb253",
+			activebackground="#ffbf71", command=self.join_network_window)
 
 		self.tableLabels = tk.Label(self.topBottomFrame, font="Monospace",  bg="grey",
-			text="{:19s}{:57s}{:26}".format("ID", "Name", "Status")
+			text="{:19s}{:57s}{:26}".format("Network ID", "Name", "Status")
 		)
 
 		self.networkListScrollbar = tk.Scrollbar(self.middleFrame, bd=2)
@@ -89,7 +85,7 @@ class MainWindow:
 		# pack widgets
 		self.networkLabel.pack(side="left", anchor="sw")
 		self.refreshButton.pack(side="right", anchor="se")
-		self.statusButton.pack(side="right", anchor="sw")
+		self.aboutButton.pack(side="right", anchor="sw")
 		self.peersButton.pack(side="right", anchor="sw")
 		self.joinButton.pack(side="right", anchor="se")
 
@@ -191,13 +187,15 @@ class MainWindow:
 		# gets networks information in a list of tuples
 		for networkPosition in range(len(networkData)):
 
-			if self.get_interface_state(networkData[networkPosition]['portDeviceName']).lower() == "down":
+			interfaceState = self.get_interface_state(networkData[networkPosition]['portDeviceName'])
+
+			if interfaceState.lower() == "down":
 				isDown = True
 			else:
 				isDown = False
 
 			networks.append((
-				networkData[networkPosition]['nwid'],
+				networkData[networkPosition]['id'],
 				networkData[networkPosition]['name'],
 				networkData[networkPosition]['status'],
 				isDown,
@@ -209,7 +207,11 @@ class MainWindow:
 
 			if not networkName:
 				networkName = "No name"
-			self.networkList.insert('end', '{} | {:55s} |{}'.format(networkId, networkName, networkStatus))
+			self.networkList.insert('end', '{} | {:55s} |{}'.format(
+																	networkId,
+																	networkName,
+																	networkStatus
+																	))
 
 			if isDown:
 				self.networkList.itemconfig(networkPosition, bg='red', selectbackground='#de0303')
@@ -250,9 +252,8 @@ class MainWindow:
 
 		joinLabel = tk.Label(mainFrame, text="Network ID:")
 		networkIdEntry = tk.Entry(mainFrame, font="Monospace")
-		joinButton = tk.Button(mainFrame, text="Join", bg="#ffb253", activebackground="#ffbf71",
-			command=lambda: join_network(networkIdEntry.get())
-		)
+		joinButton = tk.Button(mainFrame, text="Join", bg="#ffb253",
+			activebackground="#ffbf71", command=lambda: join_network(networkIdEntry.get()))
 
 		# pack widgets
 		joinLabel.pack(side="top", anchor="w")
@@ -284,9 +285,9 @@ class MainWindow:
 		# returns a list with status info
 		return status
 
-	def status_window(self):
+	def about_window(self):
 
-		statusWindow = self.launch_sub_window("Status")
+		statusWindow = self.launch_sub_window("About")
 		status = self.get_status()
 
 		# frames
@@ -295,13 +296,16 @@ class MainWindow:
 		bottomFrame = tk.Frame(statusWindow, padx=20, pady=10)
 
 		# widgets
-		titleLabel = tk.Label(topFrame, text="Status", font=70)
+		titleLabel = tk.Label(topFrame, text="ZeroTier GUI", font=70)
 
 		ztAddrLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("ZeroTier Address:", status[2])
+			text="{:25s}{}".format("My ZeroTier Address:", status[2])
 		)
 		versionLabel = tk.Label(middleFrame, font="Monospace",
 			text="{:25s}{}".format("ZeroTier Version:", status[3])
+		)
+		ztGuiVersionLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("ZeroTier GUI Version:", "1.2")
 		)
 		statusLabel = tk.Label(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Status:", status[4])
@@ -316,6 +320,7 @@ class MainWindow:
 
 		ztAddrLabel.pack(side="top", anchor="w")
 		versionLabel.pack(side="top", anchor="w")
+		ztGuiVersionLabel.pack(side="top", anchor="w")
 		statusLabel.pack(side="top", anchor="w")
 
 		closeButton.pack(side="top")
@@ -380,25 +385,23 @@ class MainWindow:
 		# widgets
 		tableLabels = tk.Label(topFrame, font="Monospace", bg="grey",
 			text="{:9s}{:47s}{:10s}{:16s}{:16s}{:12s}{:17s}".format(
-													"Active",
-													"Address",
-													"Expired",
-													"Last Receive",
-													"Last Send",
-													"Preferred",
-													"Trusted Path ID"
-												)
-		)
+																	"Active",
+																	"Address",
+																	"Expired",
+																	"Last Receive",
+																	"Last Send",
+																	"Preferred",
+																	"Trusted Path ID"
+																)
+									)
 
 		pathsListScrollbar = tk.Scrollbar(middleFrame, bd=2)
 		pathsList = tk.Listbox(middleFrame, height="15", font="Monospace", selectmode="single", relief="flat")
 
-		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253", activebackground="#ffbf71",
-			command=lambda: pathsWindow.destroy()
-		)
-		refreshButton = tk.Button(bottomFrame, text="Refresh Paths", bg="#ffb253", activebackground="#ffbf71",
-			command=lambda: self.refresh_paths(pathsList, idInList)
-		)
+		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253",
+			activebackground="#ffbf71", command=lambda: pathsWindow.destroy())
+		refreshButton = tk.Button(bottomFrame, text="Refresh Paths", bg="#ffb253",
+			activebackground="#ffbf71", command=lambda: self.refresh_paths(pathsList, idInList))
 
 		# pack widgets
 		tableLabels.pack(side="left", fill="both")
@@ -426,7 +429,6 @@ class MainWindow:
 	def see_peers(self):
 
 		peersWindow = self.launch_sub_window("Peers")
-		peersInfo = self.get_peers_info()
 
 		# frames
 		topFrame = tk.Frame(peersWindow, padx = 20)
@@ -526,34 +528,52 @@ class MainWindow:
 		# widgets
 		titleLabel = tk.Label(topFrame, text="Network Info", font=70)
 
-		nameLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Name:", currentNetworkInfo['name']))
-		nwIdLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Network ID:", currentNetworkInfo['nwid']))
-		assignedAddrLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Assigned Addresses:", assignedAddresses))
-		statusLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Status:", currentNetworkInfo['status']))
-		stateLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("State:", self.get_interface_state(currentNetworkInfo['portDeviceName'])))
-		typeLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Type:", currentNetworkInfo['type']))
-		deviceLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Device:", currentNetworkInfo['portDeviceName']))
-		bridgeLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("Bridge:", currentNetworkInfo['bridge']))
-		macLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("MAC Address:", currentNetworkInfo['mac']))
-		mtuLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("MTU:", currentNetworkInfo['mtu']))
-		dhcpLabel = tk.Label(middleFrame, font="Monospace", text="{:25s}{}".format("DHCP:", currentNetworkInfo['dhcp']))
+		nameLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("Name:", currentNetworkInfo['name']))
+		idLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("Network ID:", currentNetworkInfo['id']))
+		assignedAddrLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("Assigned Addresses:", assignedAddresses))
+		statusLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("Status:", currentNetworkInfo['status']))
+		stateLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("State:", self.get_interface_state(currentNetworkInfo['portDeviceName'])))
+		typeLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("Type:", currentNetworkInfo['type']))
+		deviceLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("Device:", currentNetworkInfo['portDeviceName']))
+		bridgeLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("Bridge:", currentNetworkInfo['bridge']))
+		macLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("MAC Address:", currentNetworkInfo['mac']))
+		mtuLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("MTU:", currentNetworkInfo['mtu']))
+		dhcpLabel = tk.Label(middleFrame, font="Monospace",
+			text="{:25s}{}".format("DHCP:", currentNetworkInfo['dhcp']))
 
-		allowDefaultLabel = tk.Label(allowDefaultFrame, font="Monospace", text="{:24s}".format("Allow Default Route"))
-		allowDefaultCheck = tk.Checkbutton(allowDefaultFrame, variable=allowDefault, command=lambda: change_config("allowDefault", allowDefault.get()))
+		allowDefaultLabel = tk.Label(allowDefaultFrame, font="Monospace",
+			text="{:24s}".format("Allow Default Route"))
+		allowDefaultCheck = tk.Checkbutton(allowDefaultFrame, variable=allowDefault,
+			command=lambda: change_config("allowDefault", allowDefault.get()))
 
-		allowGlobalLabel = tk.Label(allowGlobalFrame, font="Monospace", text="{:24s}".format("Allow Global IP"))
-		allowGlobalCheck = tk.Checkbutton(allowGlobalFrame, variable=allowGlobal, command=lambda: change_config("allowGlobal", allowGlobal.get()))
+		allowGlobalLabel = tk.Label(allowGlobalFrame, font="Monospace",
+			text="{:24s}".format("Allow Global IP"))
+		allowGlobalCheck = tk.Checkbutton(allowGlobalFrame, variable=allowGlobal,
+			command=lambda: change_config("allowGlobal", allowGlobal.get()))
 
-		allowManagedLabel = tk.Label(allowManagedFrame, font="Monospace", text="{:24s}".format("Allow Managed IP"))
-		allowManagedCheck = tk.Checkbutton(allowManagedFrame, variable=allowManaged, command=lambda: change_config("allowManaged", allowManaged.get()))
+		allowManagedLabel = tk.Label(allowManagedFrame, font="Monospace",
+			text="{:24s}".format("Allow Managed IP"))
+		allowManagedCheck = tk.Checkbutton(allowManagedFrame, variable=allowManaged,
+			command=lambda: change_config("allowManaged", allowManaged.get()))
 
-		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253", activebackground="#ffbf71", command=lambda: infoWindow.destroy())
+		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253",
+			activebackground="#ffbf71", command=lambda: infoWindow.destroy())
 
 		# pack widgets
 		titleLabel.pack(side="top", anchor="n")
 
 		nameLabel.pack(side="top", anchor="w")
-		nwIdLabel.pack(side="top", anchor="w")
+		idLabel.pack(side="top", anchor="w")
 		assignedAddrLabel.pack(side="top", anchor="w")
 		statusLabel.pack(side="top", anchor="w")
 		stateLabel.pack(side="top", anchor="w")
@@ -588,32 +608,44 @@ class MainWindow:
 		def change_config(config, value):
 
 			# zerotier-cli only accepts int values
-			if value:
-				value = 1
-			else:
-				value = 0
+			value = int(value)
 
-			check_output(['zerotier-cli', 'set', currentNetworkInfo['nwid'], f"{config}={value}"])
+			check_output(['zerotier-cli', 'set', currentNetworkInfo['id'], f"{config}={value}"])
 
 		# needed to stop local variables from being destroyed before the window
 		infoWindow.mainloop()
 
 if __name__ == "__main__":
 
-	def warning_window():
+	# automates the process of copying the auth token
+	def auth_token_setup():
 		if getuid() != 0:
 
 			# get username
 			username = check_output(['whoami']).decode()
 			username = username.replace("\n", "")
 
-			if messagebox.askyesno(icon="info", title="Root access needed", message=f"In order to grant {username} access to ZeroTier we need temporary root access to store the Auth Token in your home folder. Otherwise, you would need to run this program as root. Grant access?"):
+			question = messagebox.askyesno(
+											icon="info",
+											title="Root access needed",
+											message=f"In order to grant {username} access "\
+													"to ZeroTier we need temporary root access to "\
+													"store the Auth Token in your home folder. "\
+													"Otherwise, you would need to run this "\
+													"program as root. Grant access?"
+										)
+
+			if question:
 
 				# copy auth token to home directory and make the user own it
-				system(f'pkexec bash -c "cp /var/lib/zerotier-one/authtoken.secret /home/{username}/.zeroTierOneAuthToken && chown {username} /home/{username}/.zeroTierOneAuthToken && chmod 0600 /home/{username}/.zeroTierOneAuthToken"')
+				system(	f'pkexec bash -c "cp /var/lib/zerotier-one/authtoken.secret '\
+						f'/home/{username}/.zeroTierOneAuthToken && chown {username} '\
+						f'/home/{username}/.zeroTierOneAuthToken && chmod 0600 '\
+						f'/home/{username}/.zeroTierOneAuthToken"'
+						)
 
 			else:
-				exit()
+				_exit(0)
 
 	# temporary window for popups
 	tmp = tk.Tk()
@@ -623,19 +655,25 @@ if __name__ == "__main__":
 	try:
 		check_output(['zerotier-cli', 'listnetworks'], stderr=STDOUT)
 
+	# in case the command throws an error
 	except CalledProcessError as error:
+		
 		output = error.output.decode()
 
 		if "missing authentication token" in output:
-			messagebox.showinfo(title="Error", message="This user doesn't have access to ZeroTier!", icon="error")
-			warning_window()
+			messagebox.showinfo(title="Error",
+				message="This user doesn't have access to ZeroTier!", icon="error")
+			auth_token_setup()
 		elif "Error connecting" in output:
-			messagebox.showinfo(title="Error", message='"zerotier-one" service isn\'t running!', icon="error")
-			exit()
+			messagebox.showinfo(title="Error",
+				message='"zerotier-one" service isn\'t running!', icon="error")
+			_exit(1)
 
+	# in case there's no command
 	except FileNotFoundError:
-		messagebox.showinfo(title="Error", message="ZeroTier isn't installed!", icon="error")
-		exit()
+		messagebox.showinfo(title="Error",
+			message="ZeroTier isn't installed!", icon="error")
+		_exit(1)
 
 	# destroy temporary window
 	tmp.destroy()

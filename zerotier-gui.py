@@ -293,6 +293,7 @@ class MainWindow:
 		# frames
 		topFrame = tk.Frame(statusWindow, padx=20, pady=30)
 		middleFrame = tk.Frame(statusWindow, padx=20, pady=10)
+		bottomTopFrame = tk.Frame(statusWindow, padx=20, pady=10)
 		bottomFrame = tk.Frame(statusWindow, padx=20, pady=10)
 
 		# widgets
@@ -311,9 +312,11 @@ class MainWindow:
 			text="{:25s}{}".format("Status:", status[4])
 		)
 
-		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253", activebackground="#ffbf71",
+		closeButton = tk.Button(bottomTopFrame, text="Close", bg="#ffb253", activebackground="#ffbf71",
 			command=lambda: statusWindow.destroy()
 		)
+
+		creditsLabel = tk.Label(bottomFrame, text="GUI created by Tomás Ralph\ngithub.com/tralph3")
 
 		# pack widgets
 		titleLabel.pack(side="top", anchor="n")
@@ -325,8 +328,11 @@ class MainWindow:
 
 		closeButton.pack(side="top")
 
+		creditsLabel.pack(side="top", fill="x")
+
 		topFrame.pack(side="top", fill="both")
 		middleFrame.pack(side="top", fill="both")
+		bottomTopFrame.pack(side="top", fill="both")
 		bottomFrame.pack(side="top", fill="both")
 
 		statusWindow.mainloop()

@@ -1,9 +1,9 @@
 # ZeroTier-GUI
 <img src="zerotier-gui.png">
 
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tralph3/ZeroTier-GUI)](https://github.com/tralph3/ZeroTier-GUI/releases)
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/tralph3/ZeroTier-GUI/blob/master/LICENSE)
-[![Send me a small gift](https://img.shields.io/badge/send%20me%20a%20small%20gift-paypal-blue.svg)](https://paypal.me/tralph3)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tralph3/ZeroTier-GUI?style=flat-square)](https://github.com/tralph3/ZeroTier-GUI/releases)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](https://github.com/tralph3/ZeroTier-GUI/blob/master/LICENSE)
+[![Send me a small gift](https://img.shields.io/badge/send%20me%20a%20small%20gift-paypal-blue.svg?style=flat-square)](https://paypal.me/tralph3)
 
 **A Linux front-end for ZeroTier**
 

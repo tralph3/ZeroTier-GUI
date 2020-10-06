@@ -139,14 +139,14 @@ class MainWindow:
 		# set paths in listbox
 		for pathActive, pathAddress, pathExpired, pathLastReceive, pathLastSend, pathPreferred, pathTrustedId in paths:
 			pathsList.insert('end', '{:6s} | {:44s} | {:7s} | {:13s} | {:13s} | {:9s} | {}'.format(
-																				str(pathActive),
-																				str(pathAddress),
-																				str(pathExpired),
-																				str(pathLastReceive),
-																				str(pathLastSend),
-																				str(pathPreferred),
-																				str(pathTrustedId)
-																			))
+				str(pathActive),
+				str(pathAddress),
+				str(pathExpired),
+				str(pathLastReceive),
+				str(pathLastSend),
+				str(pathPreferred),
+				str(pathTrustedId)
+			))
 
 	def refresh_peers(self, peersList):
 
@@ -170,12 +170,11 @@ class MainWindow:
 			if peerVersion == "-1.-1.-1":
 				peerVersion = "-"
 			peersList.insert('end', '{} | {:10s} | {:10s} | {:4s}'.format(
-																			peerAddress,
-																			peerVersion,
-																			peerRole,
-																			str(peerLatency)
-																		)
-							)
+				peerAddress,
+				peerVersion,
+				peerRole,
+				str(peerLatency)
+			))
 
 	def refresh_networks(self):
 
@@ -208,10 +207,10 @@ class MainWindow:
 			if not networkName:
 				networkName = "No name"
 			self.networkList.insert('end', '{} | {:55s} |{}'.format(
-																	networkId,
-																	networkName,
-																	networkStatus
-																	))
+				networkId,
+				networkName,
+				networkStatus
+			))
 
 			if isDown:
 				self.networkList.itemconfig(networkPosition, bg='red', selectbackground='#de0303')
@@ -231,6 +230,23 @@ class MainWindow:
 
 		return subWindow
 
+	# creates entry widgets to select and copy text
+	def selectable_text(self, frame, text, justify="left", font="TkDefaultFont"):
+
+		entry = tk.Entry(
+			frame,
+			relief="flat",
+			bg="#d9d9d9",
+			highlightcolor="#d9d9d9",
+			justify=justify,
+			font=font
+		)
+
+		entry.insert(0, text)
+		entry.config(state="readonly", width=len(text))
+
+		return entry
+
 	def join_network_window(self):
 
 		def join_network(network):
@@ -240,6 +256,7 @@ class MainWindow:
 				joinResult = "Successfully joined network"
 			except:
 				joinResult = "Invalid network ID"
+
 			messagebox.showinfo(icon="info", message=joinResult)
 			self.refresh_networks()
 
@@ -265,14 +282,26 @@ class MainWindow:
 	def leave_network(self):
 
 		# get selected network
+		try:
+			self.networkList.curselection()[0]
+		except:
+			messagebox.showinfo(icon="info", title="Error", message="No network selected")
+			return
+
 		network = self.networkList.get('active')
 		network = network[:network.find(" ")]
 
-		try:
-			check_output(['zerotier-cli', 'leave', network])
-			leaveResult = "Successfully left network"
-		except:
-			leaveResult = "Error"
+		answer = messagebox.askyesno(title="Leave Network",
+			message=f"Are you sure you want to leave {network}?")
+
+		if answer:
+			try:
+				check_output(['zerotier-cli', 'leave', network])
+				leaveResult = "Successfully left network"
+			except:
+				leaveResult = "Error"
+		else:
+			return
 
 		messagebox.showinfo(icon="info", message=leaveResult)
 		self.refresh_networks()
@@ -299,14 +328,14 @@ class MainWindow:
 		# widgets
 		titleLabel = tk.Label(topFrame, text="ZeroTier GUI", font=70)
 
-		ztAddrLabel = tk.Label(middleFrame, font="Monospace",
+		ztAddrLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("My ZeroTier Address:", status[2])
 		)
 		versionLabel = tk.Label(middleFrame, font="Monospace",
 			text="{:25s}{}".format("ZeroTier Version:", status[3])
 		)
 		ztGuiVersionLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("ZeroTier GUI Version:", "1.2")
+			text="{:25s}{}".format("ZeroTier GUI Version:", "1.2.1")
 		)
 		statusLabel = tk.Label(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Status:", status[4])
@@ -316,7 +345,11 @@ class MainWindow:
 			command=lambda: statusWindow.destroy()
 		)
 
-		creditsLabel = tk.Label(bottomFrame, text="GUI created by Tomás Ralph\ngithub.com/tralph3")
+
+		# credits
+		creditsLabel1 = tk.Label(bottomFrame, text="GUI created by Tomás Ralph")
+		creditsLabel2 = self.selectable_text(bottomFrame,
+			text="github.com/tralph3/zerotier-gui", justify="center")
 
 		# pack widgets
 		titleLabel.pack(side="top", anchor="n")
@@ -328,7 +361,8 @@ class MainWindow:
 
 		closeButton.pack(side="top")
 
-		creditsLabel.pack(side="top", fill="x")
+		creditsLabel1.pack(side="top", fill="x")
+		creditsLabel2.pack(side="top")
 
 		topFrame.pack(side="top", fill="both")
 		middleFrame.pack(side="top", fill="both")
@@ -391,15 +425,15 @@ class MainWindow:
 		# widgets
 		tableLabels = tk.Label(topFrame, font="Monospace", bg="grey",
 			text="{:9s}{:47s}{:10s}{:16s}{:16s}{:12s}{:17s}".format(
-																	"Active",
-																	"Address",
-																	"Expired",
-																	"Last Receive",
-																	"Last Send",
-																	"Preferred",
-																	"Trusted Path ID"
-																)
-									)
+				"Active",
+				"Address",
+				"Expired",
+				"Last Receive",
+				"Last Send",
+				"Preferred",
+				"Trusted Path ID"
+			)
+		)
 
 		pathsListScrollbar = tk.Scrollbar(middleFrame, bd=2)
 		pathsList = tk.Listbox(middleFrame, height="15", font="Monospace", selectmode="single", relief="flat")
@@ -444,12 +478,12 @@ class MainWindow:
 		# widgets
 		tableLabels = tk.Label(topFrame, font="Monospace", bg="grey",
 			text="{:13s}{:13s}{:13s}{:13s}".format(
-													"ZT Address",
-													"Version",
-													"Role",
-													"Latency"
-												)
-							)
+				"ZT Address",
+				"Version",
+				"Role",
+				"Latency"
+			)
+		)
 
 		peersListScrollbar = tk.Scrollbar(middleFrame, bd=2)
 		peersList = tk.Listbox(middleFrame, width="50", height="15",
@@ -523,36 +557,57 @@ class MainWindow:
 		allowGlobal.set(currentNetworkInfo['allowGlobal'])
 		allowManaged.set(currentNetworkInfo['allowManaged'])
 
-		# assigned addresses text generation
+		# assigned addresses widget generation
 		try:
-			assignedAddresses = currentNetworkInfo['assignedAddresses'][0]
+
+			assignedAddressesWidgets = []
+
+			# first widget
+			assignedAddressesWidgets.append(
+				self.selectable_text(
+					middleFrame,
+					"{:25s}{}".format("Assigned Addresses:",
+						currentNetworkInfo['assignedAddresses'][0]),
+					font="Monospace"
+				)
+			)
+
+			# subsequent widgets
 			for address in currentNetworkInfo['assignedAddresses'][1:]:
-				assignedAddresses += "\n{:>42s}".format(address)
+				assignedAddressesWidgets.append(
+					self.selectable_text(
+						middleFrame,
+						"{:>42s}".format(address),
+						font="Monospace"
+					)
+				)
+
 		except IndexError:
-			assignedAddresses = "-"
+
+			assignedAddressesWidgets.append(
+				self.selectable_text(middleFrame, "{:25s}{}".format("Assigned Addresses:", "-"), font="Monospace")
+			)
 
 		# widgets
 		titleLabel = tk.Label(topFrame, text="Network Info", font=70)
 
-		nameLabel = tk.Label(middleFrame, font="Monospace",
+		nameLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Name:", currentNetworkInfo['name']))
-		idLabel = tk.Label(middleFrame, font="Monospace",
+		idLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Network ID:", currentNetworkInfo['id']))
-		assignedAddrLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("Assigned Addresses:", assignedAddresses))
 		statusLabel = tk.Label(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Status:", currentNetworkInfo['status']))
 		stateLabel = tk.Label(middleFrame, font="Monospace",
 			text="{:25s}{}".format("State:", self.get_interface_state(currentNetworkInfo['portDeviceName'])))
 		typeLabel = tk.Label(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Type:", currentNetworkInfo['type']))
-		deviceLabel = tk.Label(middleFrame, font="Monospace",
+		deviceLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Device:", currentNetworkInfo['portDeviceName']))
 		bridgeLabel = tk.Label(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Bridge:", currentNetworkInfo['bridge']))
-		macLabel = tk.Label(middleFrame, font="Monospace",
+		macLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("MAC Address:", currentNetworkInfo['mac']))
-		mtuLabel = tk.Label(middleFrame, font="Monospace",
+		mtuLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("MTU:", currentNetworkInfo['mtu']))
 		dhcpLabel = tk.Label(middleFrame, font="Monospace",
 			text="{:25s}{}".format("DHCP:", currentNetworkInfo['dhcp']))
@@ -580,7 +635,11 @@ class MainWindow:
 
 		nameLabel.pack(side="top", anchor="w")
 		idLabel.pack(side="top", anchor="w")
-		assignedAddrLabel.pack(side="top", anchor="w")
+
+			# assigned addresses
+		for widget in assignedAddressesWidgets:
+			widget.pack(side="top", anchor="w")
+
 		statusLabel.pack(side="top", anchor="w")
 		stateLabel.pack(side="top", anchor="w")
 		typeLabel.pack(side="top", anchor="w")
@@ -663,7 +722,7 @@ if __name__ == "__main__":
 
 	# in case the command throws an error
 	except CalledProcessError as error:
-		
+
 		output = error.output.decode()
 
 		if "missing authentication token" in output:

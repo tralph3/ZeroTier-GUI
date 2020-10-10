@@ -468,6 +468,9 @@ class MainWindow:
 
 	def see_peers(self):
 
+		def call_see_peer_paths(event):
+			self.see_peer_paths(peersList)
+
 		peersWindow = self.launch_sub_window("Peers")
 
 		# frames
@@ -489,6 +492,8 @@ class MainWindow:
 		peersList = tk.Listbox(middleFrame, width="50", height="15",
 			font="Monospace", selectmode="single", relief="flat"
 		)
+
+		peersList.bind('<Double-Button-1>', call_see_peer_paths)
 
 		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253",
 			activebackground="#ffbf71", command=lambda: peersWindow.destroy()
@@ -691,14 +696,14 @@ if __name__ == "__main__":
 			username = username.replace("\n", "")
 
 			question = messagebox.askyesno(
-											icon="info",
-											title="Root access needed",
-											message=f"In order to grant {username} access "\
-													"to ZeroTier we need temporary root access to "\
-													"store the Auth Token in your home folder. "\
-													"Otherwise, you would need to run this "\
-													"program as root. Grant access?"
-										)
+				icon="info",
+				title="Root access needed",
+				message=f"In order to grant {username} access "\
+						"to ZeroTier we need temporary root access to "\
+						"store the Auth Token in your home folder. "\
+						"Otherwise, you would need to run this "\
+						"program as root. Grant access?"
+			)
 
 			if question:
 

@@ -40,46 +40,52 @@ class MainWindow:
 		self.window.title("ZeroTier")
 		self.window.resizable(width = False, height = False)
 
+		# colors
+		self.background = "#d9d9d9"
+		self.foreground = "black"
+		self.buttonBackground = "#ffb253"
+		self.buttonActiveBackground = "#ffbf71"
+
 		# layout setup
-		self.topFrame = tk.Frame(self.window, padx = 20, pady = 10)
-		self.topBottomFrame = tk.Frame(self.window, padx = 20)
-		self.middleFrame = tk.Frame(self.window, padx = 20)
-		self.bottomFrame = tk.Frame(self.window, padx = 20, pady = 10)
+		self.topFrame = tk.Frame(self.window, padx = 20, pady = 10, bg=self.background)
+		self.topBottomFrame = tk.Frame(self.window, padx = 20, bg=self.background)
+		self.middleFrame = tk.Frame(self.window, padx = 20, bg=self.background)
+		self.bottomFrame = tk.Frame(self.window, padx = 20, pady = 10, bg=self.background)
 
 		# widgets
-		self.networkLabel = tk.Label(self.topFrame, text="Joined Networks:", font=40)
-		self.refreshButton = tk.Button(self.topFrame, text="Refresh Networks", bg="#ffb253",
-			activebackground="#ffbf71", command=self.refresh_networks)
-		self.aboutButton = tk.Button(self.topFrame, text="About", bg="#ffb253",
-			activebackground="#ffbf71", command=self.about_window)
-		self.peersButton = tk.Button(self.topFrame, text="Show Peers", bg="#ffb253",
-			activebackground="#ffbf71", command=self.see_peers)
-		self.joinButton = tk.Button(self.topFrame, text="Join Network", bg="#ffb253",
-			activebackground="#ffbf71", command=self.join_network_window)
+		self.networkLabel = tk.Label(self.topFrame, text="Joined Networks:", font=40, bg=self.background, fg=self.foreground)
+		self.refreshButton = self.formatted_buttons(self.topFrame,
+			text="Refresh Networks", command=self.refresh_networks)
+		self.aboutButton = self.formatted_buttons(self.topFrame,
+			text="About", command=self.about_window)
+		self.peersButton = self.formatted_buttons(self.topFrame,
+			text="Show Peers", command=self.see_peers)
+		self.joinButton = self.formatted_buttons(self.topFrame,
+			text="Join Network", command=self.join_network_window)
 
 		self.tableLabels = tk.Label(self.topBottomFrame, font="Monospace",  bg="grey",
-			text="{:19s}{:57s}{:26}".format("Network ID", "Name", "Status")
+			text="{:19s}{:57s}{:26}".format("Network ID", "Name", "Status"), fg=self.foreground
 		)
 
 		self.networkListScrollbar = tk.Scrollbar(self.middleFrame, bd=2)
 
 		self.networkList = tk.Listbox(self.middleFrame, width="100", height="15",
-			font="Monospace", selectmode="single", relief="flat"
+			font="Monospace", selectmode="single", relief="flat", bg="white", fg=self.foreground
 		)
 
 		self.networkList.bind('<Double-Button-1>', self.call_see_network_info)
 
-		self.leaveButton = tk.Button(self.bottomFrame, text="Leave Network", bg="#ffb253",
-			activebackground="#ffbf71", command=self.leave_network
+		self.leaveButton = self.formatted_buttons(self.bottomFrame, text="Leave Network", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=self.leave_network
 		)
-		self.ztCentralButton = tk.Button(self.bottomFrame, text="ZeroTier Central", bg="#ffb253",
-			activebackground="#ffbf71", command=self.zt_central
+		self.ztCentralButton = self.formatted_buttons(self.bottomFrame, text="ZeroTier Central", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=self.zt_central
 		)
-		self.toggleConnectionButton = tk.Button(self.bottomFrame, text="Disconnect/Connect Interface", bg="#ffb253",
-			activebackground="#ffbf71", command=self.toggle_interface_connection
+		self.toggleConnectionButton = self.formatted_buttons(self.bottomFrame, text="Disconnect/Connect Interface", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=self.toggle_interface_connection
 		)
-		self.infoButton = tk.Button(self.bottomFrame, text="Network Info", bg="#ffb253",
-			activebackground="#ffbf71", command=self.see_network_info
+		self.infoButton = self.formatted_buttons(self.bottomFrame, text="Network Info", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=self.see_network_info
 		)
 
 		# pack widgets
@@ -236,16 +242,46 @@ class MainWindow:
 		entry = tk.Entry(
 			frame,
 			relief="flat",
-			bg="#d9d9d9",
-			highlightcolor="#d9d9d9",
+			bg=self.background,
+			highlightcolor=self.background,
+			fg=self.foreground,
+			selectforeground=self.foreground,
+			selectborderwidth=0,
 			justify=justify,
-			font=font
+			font=font,
+			bd=0
 		)
 
 		entry.insert(0, text)
 		entry.config(state="readonly", width=len(text))
 
 		return entry
+
+	# creates correctly formatted buttons
+	def formatted_buttons(self, frame, text="", bg=None, fg=None,
+	justify="left", activebackground=None, command="", activeforeground=None):
+
+		if bg is None:
+			bg = self.buttonBackground
+		if fg is None:
+			fg = self.foreground
+		if activebackground is None:
+			activebackground = self.buttonActiveBackground
+		if activeforeground is None:
+			activeforeground = self.foreground
+
+		button = tk.Button(
+			frame,
+			text=text,
+			bg=bg,
+			fg=fg,
+			justify=justify,
+			activebackground=activebackground,
+			activeforeground=activeforeground,
+			command=command
+		)
+
+		return button
 
 	def join_network_window(self):
 
@@ -269,8 +305,8 @@ class MainWindow:
 
 		joinLabel = tk.Label(mainFrame, text="Network ID:")
 		networkIdEntry = tk.Entry(mainFrame, font="Monospace")
-		joinButton = tk.Button(mainFrame, text="Join", bg="#ffb253",
-			activebackground="#ffbf71", command=lambda: join_network(networkIdEntry.get()))
+		joinButton = self.formatted_buttons(mainFrame, text="Join", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=lambda: join_network(networkIdEntry.get()))
 
 		# pack widgets
 		joinLabel.pack(side="top", anchor="w")
@@ -320,34 +356,39 @@ class MainWindow:
 		status = self.get_status()
 
 		# frames
-		topFrame = tk.Frame(statusWindow, padx=20, pady=30)
-		middleFrame = tk.Frame(statusWindow, padx=20, pady=10)
-		bottomTopFrame = tk.Frame(statusWindow, padx=20, pady=10)
-		bottomFrame = tk.Frame(statusWindow, padx=20, pady=10)
+		topFrame = tk.Frame(statusWindow, padx=20, pady=30, bg=self.background)
+		middleFrame = tk.Frame(statusWindow, padx=20, pady=10, bg=self.background)
+		bottomTopFrame = tk.Frame(statusWindow, padx=20, pady=10, bg=self.background)
+		bottomFrame = tk.Frame(statusWindow, padx=20, pady=10, bg=self.background)
 
 		# widgets
-		titleLabel = tk.Label(topFrame, text="ZeroTier GUI", font=70)
+		titleLabel = tk.Label(topFrame, text="ZeroTier GUI", font=70,
+			bg=self.background, fg=self.foreground)
 
 		ztAddrLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("My ZeroTier Address:", status[2])
 		)
 		versionLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("ZeroTier Version:", status[3])
+			text="{:25s}{}".format("ZeroTier Version:", status[3]),
+			bg=self.background, fg=self.foreground
 		)
 		ztGuiVersionLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("ZeroTier GUI Version:", "1.2.1")
+			text="{:25s}{}".format("ZeroTier GUI Version:", "1.2.1"),
+			bg=self.background, fg=self.foreground
 		)
 		statusLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("Status:", status[4])
+			text="{:25s}{}".format("Status:", status[4]),
+			bg=self.background, fg=self.foreground
 		)
 
-		closeButton = tk.Button(bottomTopFrame, text="Close", bg="#ffb253", activebackground="#ffbf71",
+		closeButton = self.formatted_buttons(bottomTopFrame, text="Close", bg=self.buttonBackground, activebackground=self.buttonActiveBackground,
 			command=lambda: statusWindow.destroy()
 		)
 
 
 		# credits
-		creditsLabel1 = tk.Label(bottomFrame, text="GUI created by Tomás Ralph")
+		creditsLabel1 = tk.Label(bottomFrame, text="GUI created by Tomás Ralph",
+			bg=self.background, fg=self.foreground)
 		creditsLabel2 = self.selectable_text(bottomFrame,
 			text="github.com/tralph3/zerotier-gui", justify="center")
 
@@ -418,12 +459,13 @@ class MainWindow:
 		pathsWindow = self.launch_sub_window("Peer Path")
 
 		# frames
-		topFrame = tk.Frame(pathsWindow, padx = 20)
-		middleFrame = tk.Frame(pathsWindow, padx = 20)
-		bottomFrame = tk.Frame(pathsWindow, padx = 20, pady = 10)
+		topFrame = tk.Frame(pathsWindow, padx = 20, bg=self.background)
+		middleFrame = tk.Frame(pathsWindow, padx = 20, bg=self.background)
+		bottomFrame = tk.Frame(pathsWindow, padx = 20, pady = 10, bg=self.background)
 
 		# widgets
-		tableLabels = tk.Label(topFrame, font="Monospace", bg="grey",
+		tableLabels = tk.Label(topFrame, font="Monospace",
+			bg="grey", fg=self.foreground,
 			text="{:9s}{:47s}{:10s}{:16s}{:16s}{:12s}{:17s}".format(
 				"Active",
 				"Address",
@@ -436,12 +478,13 @@ class MainWindow:
 		)
 
 		pathsListScrollbar = tk.Scrollbar(middleFrame, bd=2)
-		pathsList = tk.Listbox(middleFrame, height="15", font="Monospace", selectmode="single", relief="flat")
+		pathsList = tk.Listbox(middleFrame, height="15", font="Monospace",
+			selectmode="single", relief="flat", bg="white", fg=self.foreground)
 
-		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253",
-			activebackground="#ffbf71", command=lambda: pathsWindow.destroy())
-		refreshButton = tk.Button(bottomFrame, text="Refresh Paths", bg="#ffb253",
-			activebackground="#ffbf71", command=lambda: self.refresh_paths(pathsList, idInList))
+		closeButton = self.formatted_buttons(bottomFrame, text="Close", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=lambda: pathsWindow.destroy())
+		refreshButton = self.formatted_buttons(bottomFrame, text="Refresh Paths", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=lambda: self.refresh_paths(pathsList, idInList))
 
 		# pack widgets
 		tableLabels.pack(side="left", fill="both")
@@ -474,12 +517,13 @@ class MainWindow:
 		peersWindow = self.launch_sub_window("Peers")
 
 		# frames
-		topFrame = tk.Frame(peersWindow, padx = 20)
-		middleFrame = tk.Frame(peersWindow, padx = 20)
-		bottomFrame = tk.Frame(peersWindow, padx = 20, pady = 10)
+		topFrame = tk.Frame(peersWindow, padx = 20, bg=self.background)
+		middleFrame = tk.Frame(peersWindow, padx = 20, bg=self.background)
+		bottomFrame = tk.Frame(peersWindow, padx = 20, pady = 10, bg=self.background)
 
 		# widgets
-		tableLabels = tk.Label(topFrame, font="Monospace", bg="grey",
+		tableLabels = tk.Label(topFrame, font="Monospace",
+			bg="grey", fg=self.foreground,
 			text="{:13s}{:13s}{:13s}{:13s}".format(
 				"ZT Address",
 				"Version",
@@ -490,19 +534,20 @@ class MainWindow:
 
 		peersListScrollbar = tk.Scrollbar(middleFrame, bd=2)
 		peersList = tk.Listbox(middleFrame, width="50", height="15",
-			font="Monospace", selectmode="single", relief="flat"
+			font="Monospace", selectmode="single", relief="flat",
+			bg="white", fg=self.foreground
 		)
 
 		peersList.bind('<Double-Button-1>', call_see_peer_paths)
 
-		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253",
-			activebackground="#ffbf71", command=lambda: peersWindow.destroy()
+		closeButton = self.formatted_buttons(bottomFrame, text="Close", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=lambda: peersWindow.destroy()
 		)
-		refreshButton = tk.Button(bottomFrame, text="Refresh Peers", bg="#ffb253",
-			activebackground="#ffbf71", command=lambda: self.refresh_peers(peersList)
+		refreshButton = self.formatted_buttons(bottomFrame, text="Refresh Peers", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=lambda: self.refresh_peers(peersList)
 		)
-		seePathsButton = tk.Button(bottomFrame, text="See Paths", bg="#ffb253",
-			activebackground="#ffbf71", command=lambda: self.see_peer_paths(peersList)
+		seePathsButton = self.formatted_buttons(bottomFrame, text="See Paths", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=lambda: self.see_peer_paths(peersList)
 		)
 
 		# pack widgets
@@ -544,14 +589,14 @@ class MainWindow:
 		currentNetworkInfo = self.get_networks_info()[idInList]
 
 		# frames
-		topFrame = tk.Frame(infoWindow, pady=30)
-		middleFrame = tk.Frame(infoWindow, padx=20)
+		topFrame = tk.Frame(infoWindow, pady=30, bg=self.background)
+		middleFrame = tk.Frame(infoWindow, padx=20, bg=self.background)
 
-		allowDefaultFrame = tk.Frame(infoWindow, padx=20)
-		allowGlobalFrame = tk.Frame(infoWindow, padx=20)
-		allowManagedFrame = tk.Frame(infoWindow, padx=20)
+		allowDefaultFrame = tk.Frame(infoWindow, padx=20, bg=self.background)
+		allowGlobalFrame = tk.Frame(infoWindow, padx=20, bg=self.background)
+		allowManagedFrame = tk.Frame(infoWindow, padx=20, bg=self.background)
 
-		bottomFrame = tk.Frame(infoWindow, pady=10)
+		bottomFrame = tk.Frame(infoWindow, pady=10, bg=self.background)
 
 		# check variables
 		allowDefault = tk.BooleanVar()
@@ -594,46 +639,69 @@ class MainWindow:
 			)
 
 		# widgets
-		titleLabel = tk.Label(topFrame, text="Network Info", font=70)
+		titleLabel = tk.Label(topFrame, text="Network Info", font=70,
+			bg=self.background, fg=self.foreground)
 
 		nameLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Name:", currentNetworkInfo['name']))
 		idLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Network ID:", currentNetworkInfo['id']))
 		statusLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("Status:", currentNetworkInfo['status']))
+			text="{:25s}{}".format("Status:", currentNetworkInfo['status']),
+			bg=self.background, fg=self.foreground
+		)
 		stateLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("State:", self.get_interface_state(currentNetworkInfo['portDeviceName'])))
+			text="{:25s}{}".format("State:", self.get_interface_state(currentNetworkInfo['portDeviceName'])),
+			bg=self.background, fg=self.foreground
+		)
 		typeLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("Type:", currentNetworkInfo['type']))
+			text="{:25s}{}".format("Type:", currentNetworkInfo['type']),
+			bg=self.background, fg=self.foreground
+		)
 		deviceLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("Device:", currentNetworkInfo['portDeviceName']))
 		bridgeLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("Bridge:", currentNetworkInfo['bridge']))
+			text="{:25s}{}".format("Bridge:", currentNetworkInfo['bridge']),
+			bg=self.background, fg=self.foreground
+		)
 		macLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("MAC Address:", currentNetworkInfo['mac']))
 		mtuLabel = self.selectable_text(middleFrame, font="Monospace",
 			text="{:25s}{}".format("MTU:", currentNetworkInfo['mtu']))
 		dhcpLabel = tk.Label(middleFrame, font="Monospace",
-			text="{:25s}{}".format("DHCP:", currentNetworkInfo['dhcp']))
+			text="{:25s}{}".format("DHCP:", currentNetworkInfo['dhcp']),
+			bg=self.background, fg=self.foreground
+		)
 
 		allowDefaultLabel = tk.Label(allowDefaultFrame, font="Monospace",
-			text="{:24s}".format("Allow Default Route"))
+			text="{:24s}".format("Allow Default Route"),
+			bg=self.background, fg=self.foreground
+		)
 		allowDefaultCheck = tk.Checkbutton(allowDefaultFrame, variable=allowDefault,
-			command=lambda: change_config("allowDefault", allowDefault.get()))
+			command=lambda: change_config("allowDefault", allowDefault.get()),
+			bg=self.background, fg=self.foreground
+		)
 
 		allowGlobalLabel = tk.Label(allowGlobalFrame, font="Monospace",
-			text="{:24s}".format("Allow Global IP"))
+			text="{:24s}".format("Allow Global IP"),
+			bg=self.background, fg=self.foreground
+		)
 		allowGlobalCheck = tk.Checkbutton(allowGlobalFrame, variable=allowGlobal,
-			command=lambda: change_config("allowGlobal", allowGlobal.get()))
+			command=lambda: change_config("allowGlobal", allowGlobal.get()),
+			bg=self.background, fg=self.foreground
+		)
 
 		allowManagedLabel = tk.Label(allowManagedFrame, font="Monospace",
-			text="{:24s}".format("Allow Managed IP"))
+			text="{:24s}".format("Allow Managed IP"),
+			bg=self.background, fg=self.foreground
+		)
 		allowManagedCheck = tk.Checkbutton(allowManagedFrame, variable=allowManaged,
-			command=lambda: change_config("allowManaged", allowManaged.get()))
+			command=lambda: change_config("allowManaged", allowManaged.get()),
+			bg=self.background, fg=self.foreground
+		)
 
-		closeButton = tk.Button(bottomFrame, text="Close", bg="#ffb253",
-			activebackground="#ffbf71", command=lambda: infoWindow.destroy())
+		closeButton = self.formatted_buttons(bottomFrame, text="Close", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=lambda: infoWindow.destroy())
 
 		# pack widgets
 		titleLabel.pack(side="top", anchor="n")
@@ -680,7 +748,20 @@ class MainWindow:
 			# zerotier-cli only accepts int values
 			value = int(value)
 
-			check_output(['zerotier-cli', 'set', currentNetworkInfo['id'], f"{config}={value}"])
+			try:
+
+				check_output(['zerotier-cli', 'set', currentNetworkInfo['id'], f"{config}={value}"],
+					stderr=STDOUT)
+
+			except CalledProcessError as error:
+
+				error = error.output.decode().strip()
+
+				messagebox.showinfo(
+					title="Error",
+					message=f"Error: \"{error}\"",
+					icon="error"
+				)
 
 		# needed to stop local variables from being destroyed before the window
 		infoWindow.mainloop()

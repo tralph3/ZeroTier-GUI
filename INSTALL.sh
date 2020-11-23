@@ -16,10 +16,10 @@
 
 echo "We need root access to change the owner of the script"
 
-chmod +x zerotier-gui
-sudo chown root zerotier-gui
+chmod +x zerotier-gui.py
+sudo chown root zerotier-gui.py
 sudo chown root zerotier-gui.png
 sudo chown root zerotier-gui.desktop
-sudo mv -vf zerotier-gui /usr/bin/
+sudo mv -vf zerotier-gui.py /usr/bin/
 sudo mv -vf zerotier-gui.png /usr/share/pixmaps/
 sudo mv -vf zerotier-gui.desktop /usr/share/applications/

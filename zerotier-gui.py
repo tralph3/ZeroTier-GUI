@@ -84,6 +84,10 @@ class MainWindow:
 		self.toggleConnectionButton = self.formatted_buttons(self.bottomFrame, text="Disconnect/Connect Interface", bg=self.buttonBackground,
 			activebackground=self.buttonActiveBackground, command=self.toggle_interface_connection
 		)
+		self.toggleServiceButton = self.formatted_buttons(self.bottomFrame, text="Toggle ZT Service", bg=self.buttonBackground,
+			activebackground=self.buttonActiveBackground, command=self.toggle_service
+		)
+		self.serviceStatusLabel = tk.Label(self.bottomFrame, font=40, bg=self.background, fg=self.foreground)
 		self.infoButton = self.formatted_buttons(self.bottomFrame, text="Network Info", bg=self.buttonBackground,
 			activebackground=self.buttonActiveBackground, command=self.see_network_info
 		)
@@ -104,6 +108,8 @@ class MainWindow:
 		self.toggleConnectionButton.pack(side="left", fill="x")
 		self.infoButton.pack(side="right", fill="x")
 		self.ztCentralButton.pack(side="right", fill="x")
+		self.toggleServiceButton.pack(side="right", fill="x")
+		self.serviceStatusLabel.pack(side="right", fill="x")
 
 		# frames
 		self.topFrame.pack(side="top", fill="x")
@@ -113,9 +119,34 @@ class MainWindow:
 
 		# extra configuration
 		self.refresh_networks()
+		self.update_service_label()
 
 		self.networkList.config(yscrollcommand=self.networkListScrollbar.set)
 		self.networkListScrollbar.config(command=self.networkList.yview)
+
+	def toggle_service(self):
+		state = self.get_service_status()
+		if  state == 'active':
+			check_output(['systemctl', 'stop', 'zerotier-one'])
+			self.update_service_label()
+		else:
+			check_output(['systemctl', 'start', 'zerotier-one'])
+			self.update_service_label()
+
+	def get_service_status(self):
+		data = check_output(["systemctl", "show", "zerotier-one"],
+			universal_newlines=True).split('\n')
+		formatted_data = {}
+		for entry in data:
+			key_value = entry.split("=", 1)
+			if len(key_value) == 2:
+				formatted_data[key_value[0]] = key_value[1]
+
+		return formatted_data['ActiveState']
+
+	def update_service_label(self):
+		state = self.get_service_status()
+		self.serviceStatusLabel.configure(text=f"Service Status: {state} | ")
 
 	def zt_central(self):
 		open_new_tab("https://my.zerotier.com")

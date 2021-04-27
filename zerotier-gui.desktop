@@ -9,3 +9,4 @@ Name=ZeroTier GUI
 GenericName=ZeroTier GUI
 StartupNotify=false
 Categories=Utility;
+Version=1.2.2

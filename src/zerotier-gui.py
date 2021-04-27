@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 #A Linux front-end for ZeroTier
-#Copyright (C) 2020  Tomás Ralph
+#Copyright (C) 2021  Tomás Ralph
 #
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by

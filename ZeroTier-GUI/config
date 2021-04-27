@@ -1,0 +1,8 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = true
+[remote "origin"]
+	url = https://github.com/tralph3/ZeroTier-GUI.git
+	fetch = +refs/*:refs/*
+	mirror = true

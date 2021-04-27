@@ -8,11 +8,11 @@
 **A Linux front-end for ZeroTier**
 
 ### Manage Networks
-<img src="images/managenetworks1.png " width="1000">
-<img src="images/managenetworks2.png " width="1000">
+<img src="img/managenetworks1.png " width="1000">
+<img src="img/managenetworks2.png " width="1000">
 
 ### Manage Peers
-<img src="images/managepeers.png " width="500">
+<img src="img/managepeers.png " width="500">
 
 # Dependencies
 

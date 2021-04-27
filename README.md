@@ -1,4 +1,4 @@
-# ZeroTier-GUI <img src="zerotier-gui.png" align="bottom">
+# ZeroTier-GUI <img src="img/zerotier-gui.png" align="bottom">
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tralph3/ZeroTier-GUI?style=flat-square)](https://github.com/tralph3/ZeroTier-GUI/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](https://github.com/tralph3/ZeroTier-GUI/blob/master/LICENSE)

@@ -16,7 +16,7 @@
 
 # Installation
 
-You can download the software from the AUR
+You can download the software from the [AUR](https://aur.archlinux.org/packages/zerotier-gui-git/).
 
     paru -Syu zerotier-gui-git
 

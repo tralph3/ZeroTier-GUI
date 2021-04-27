@@ -1,7 +1,7 @@
 # Maintainer: Tomás Ralph <tomasralph2000@gmail.com>
 _pkgname=ZeroTier-GUI
 pkgname=zerotier-gui-git
-pkgver=1.2.2.r39.78666ee
+pkgver=1.2.2
 pkgrel=1
 pkgdesc="A Linux front-end for ZeroTier"
 arch=(any)

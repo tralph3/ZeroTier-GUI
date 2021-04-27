@@ -14,6 +14,12 @@
 ### Manage Peers
 <img src="img/managepeers.png " width="500">
 
+# Installation
+
+You can download the software from the AUR
+
+    paru -Syu zerotier-gui-git
+
 # Dependencies
 
 ## Compiled

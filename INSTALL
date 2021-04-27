@@ -16,10 +16,9 @@
 
 chmod +x src/zerotier-gui.py
 ln -sf src/zerotier-gui.py /usr/bin/zerotier-gui
-mv -vf zerotier-gui.png /usr/share/pixmaps/
+mv -vf img/zerotier-gui.png /usr/share/pixmaps/
 mv -vf zerotier-gui.desktop /usr/share/applications/
 mv src/zerotier-gui.py .
 rmdir src
 mkdir -vp /usr/share/zerotier-gui
 mv * /usr/share/zerotier-gui
-

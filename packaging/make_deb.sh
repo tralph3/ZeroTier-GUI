@@ -36,3 +36,7 @@ Description: A Linux front-end for ZeroTier" > DEBIAN/control
 # Build the package
 
 dpkg-deb --build ../packaging
+
+# Rename the package
+
+mv ../packaging.deb ../ZeroTier-GUI.deb

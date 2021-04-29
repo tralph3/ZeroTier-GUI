@@ -35,9 +35,4 @@ The script will generate a `ZeroTier-GUI.deb` package in the root directory. Sim
 
 # Dependencies
 
-## Compiled
-* GLIBC 2.31 or greater (check with `ldd --version`)
-
-## Source
-* Python 3.8
-* Tkinter module (sometimes doesn't come pre-installed, it's in the `python3-tk` package)
+None of the packages contains the back-end, zerotier-one. Arch has it in the `community` repo. For Ubuntu based distributions, you'll need to install it manually [from their website](https://www.zerotier.com/download/).

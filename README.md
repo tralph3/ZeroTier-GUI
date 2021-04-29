@@ -20,6 +20,12 @@ You can download the software from the [AUR](https://aur.archlinux.org/packages/
 
     paru -Syu zerotier-gui-git
 
+If you are in an Ubuntu based distribution, you can download the source code and run the `make_deb.sh` script.
+
+    ZeroTier-GUI$ ./packaging/make_deb.sh
+
+The script will generate a `ZeroTier-GUI.deb` package in the root directory. Simply install it.
+
 # Dependencies
 
 ## Compiled

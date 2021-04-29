@@ -22,7 +22,14 @@ You can download the software from the [AUR](https://aur.archlinux.org/packages/
 
 If you are in an Ubuntu based distribution, you can download the source code and run the `make_deb.sh` script.
 
-    ZeroTier-GUI$ ./packaging/make_deb.sh
+    ZeroTier-GUI$ cd packaging
+    ZeroTier-GUI$ ./make_deb.sh
+
+You may need to mark it as executable first:
+
+    chmod +x make_deb.sh
+
+**The script must be ran on the `packaging` folder, make sure to `cd` into it.**
 
 The script will generate a `ZeroTier-GUI.deb` package in the root directory. Simply install it.
 

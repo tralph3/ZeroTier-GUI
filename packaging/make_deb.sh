@@ -9,7 +9,10 @@ cd -
 # Create file structure
 
 mkdir -v DEBIAN
-mkdir -pv usr/share/{licenses/ZeroTier-GUI,pixmaps,applications,doc/ZeroTier-GUI}
+mkdir -pv usr/share/licenses/ZeroTier-GUI
+mkdir -pv usr/share/pixmaps
+mkdir -pv usr/share/applications
+mkdir -pv usr/share/doc/ZeroTier-GUI
 mkdir -pv usr/bin
 
 

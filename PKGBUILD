@@ -7,7 +7,7 @@ pkgdesc="A Linux front-end for ZeroTier"
 arch=(any)
 url="https://github.com/tralph3/ZeroTier-GUI.git"
 license=('GPL3')
-depends=(tk python polkit)
+depends=('tk' 'python>=3.6' 'polkit')
 makedepends=(git)
 optdepends=('zerotier-one: Provides the backend of the program')
 source=("git+$url")

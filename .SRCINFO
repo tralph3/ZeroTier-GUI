@@ -7,7 +7,7 @@ pkgbase = zerotier-gui-git
 	license = GPL3
 	makedepends = git
 	depends = tk
-	depends = python
+	depends = python>=3.6
 	depends = polkit
 	optdepends = zerotier-one: Provides the backend of the program
 	source = git+https://github.com/tralph3/ZeroTier-GUI.git

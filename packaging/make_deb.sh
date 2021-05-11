@@ -28,7 +28,7 @@ echo "Package: zerotier-gui
 Version: ${packageVersion}
 Architecture: all
 Maintainer: tralph3
-Depends: python3-tk,policykit-1,python3
+Depends: python3-tk,policykit-1,python3 (>=3.6)
 Priority: optional
 Homepage: https://github.com/tralph3/ZeroTier-GUI
 Description: A Linux front-end for ZeroTier" > DEBIAN/control

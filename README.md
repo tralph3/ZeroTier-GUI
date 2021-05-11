@@ -20,7 +20,7 @@ You can download the software from the [AUR](https://aur.archlinux.org/packages/
 
     paru -Syu zerotier-gui-git
 
-If you are in an Ubuntu based distribution, you can download the source code and run the `make_deb.sh` script.
+If you are in an Ubuntu/Debian based distribution, you can download the source code and run the `make_deb.sh` script.
 
     ZeroTier-GUI$ cd packaging
     ZeroTier-GUI$ ./make_deb.sh
@@ -31,8 +31,8 @@ You may need to mark it as executable first:
 
 **The script must be ran on the `packaging` folder, make sure to `cd` into it.**
 
-The script will generate a `ZeroTier-GUI.deb` package in the root directory. Simply install it.
+The script will generate a `ZeroTier-GUI.deb` package in the root directory. Simply install it with `dpkg -i Zerotier-GUI.deb`
 
 # Dependencies
 
-None of the packages contains the back-end, zerotier-one. Arch has it in the `community` repo. For Ubuntu based distributions, you'll need to install it manually [from their website](https://www.zerotier.com/download/).
+None of the packages contains the back-end, zerotier-one. Arch has it in the `community` repo. For Ubuntu based distributions, you'll need to install it manually [from their website](https://www.zerotier.com/download/). On top of that, you'll need python3.6 or greater, and the tkinter module. This however should be handled by the packaging software.

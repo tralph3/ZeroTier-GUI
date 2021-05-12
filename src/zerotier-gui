@@ -824,7 +824,7 @@ if __name__ == "__main__":
 						f'/home/{username}/.zeroTierOneAuthToken && chown {username} '\
 						f'/home/{username}/.zeroTierOneAuthToken && chmod 0600 '\
 						f'/home/{username}/.zeroTierOneAuthToken"'
-						)
+					)
 
 			else:
 				_exit(0)
@@ -840,22 +840,22 @@ if __name__ == "__main__":
 	# in case the command throws an error
 	except CalledProcessError as error:
 
-		output = error.output.decode()
-
-		if "missing authentication token" in output:
+		# no zerotier authtoken
+		if error.returncode == 2:
 			messagebox.showinfo(title="Error",
 				message="This user doesn't have access to ZeroTier!", icon="error")
 			auth_token_setup()
-		elif "Error connecting" in output:
+		# service not running
+		elif error.returncode == 1:
 			messagebox.showinfo(title="Error",
 				message='"zerotier-one" service isn\'t running!', icon="error")
 			_exit(1)
 
-	# in case there's no command
-	except FileNotFoundError:
-		messagebox.showinfo(title="Error",
-			message="ZeroTier isn't installed!", icon="error")
-		_exit(1)
+		# in case there's no command
+		elif error.returncode == 127:
+			messagebox.showinfo(title="Error",
+				message="ZeroTier isn't installed!", icon="error")
+			_exit(1)
 
 	# destroy temporary window
 	tmp.destroy()

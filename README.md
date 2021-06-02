@@ -31,7 +31,7 @@ You may need to mark it as executable first:
 
 **The script must be ran on the `packaging` folder, make sure to `cd` into it.**
 
-The script will generate a `ZeroTier-GUI.deb` package in the root directory. Simply install it with `dpkg -i Zerotier-GUI.deb`
+The script will generate a `ZeroTier-GUI.deb` package in the root directory. Simply install it with `dpkg -i Zerotier-GUI.deb`. You may need to run `apt -f install` afterwards to install dependencies if unmet.
 
 # Dependencies
 

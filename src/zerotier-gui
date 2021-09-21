@@ -36,7 +36,7 @@ class MainWindow:
 
                 # create widgets
                 # window setup
-                self.window = tk.Tk()
+                self.window = tk.Tk(className='zerotier-gui')
                 self.window.title("ZeroTier")
                 self.window.resizable(width = False, height = False)
 
@@ -261,7 +261,7 @@ class MainWindow:
                 return loads(check_output(['zerotier-cli', '-j', 'peers']))
 
         def launch_sub_window(self, title):
-                subWindow = tk.Toplevel(self.window)
+                subWindow = tk.Toplevel(self.window, class_='zerotier-gui')
                 subWindow.title(title)
                 subWindow.resizable(width = False, height = False)
 

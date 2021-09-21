@@ -24,9 +24,10 @@
 ##################################
 
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 from subprocess import check_output, STDOUT, CalledProcessError
-from json import loads
+import json
 from os import getuid, system, _exit
 from webbrowser import open_new_tab
 
@@ -69,9 +70,7 @@ class MainWindow:
 
                 self.networkListScrollbar = tk.Scrollbar(self.middleFrame, bd=2)
 
-                self.networkList = tk.Listbox(self.middleFrame, width="100", height="15",
-                        font="Monospace", selectmode="single", relief="flat", bg="white", fg=self.foreground
-                )
+                self.networkList = ttk.Treeview(self.middleFrame)
 
                 self.networkList.bind('<Double-Button-1>', self.call_see_network_info)
 
@@ -127,10 +126,10 @@ class MainWindow:
         def toggle_service(self):
                 state = self.get_service_status()
                 if  state == 'active':
-                        check_output(['systemctl', 'stop', 'zerotier-one'])
+                        manage_service("stop")
                         self.update_service_label()
                 else:
-                        check_output(['systemctl', 'start', 'zerotier-one'])
+                        manage_service("start")
                         self.update_service_label()
 
         def get_service_status(self):
@@ -215,7 +214,7 @@ class MainWindow:
 
         def refresh_networks(self):
 
-                self.networkList.delete(0, 'end')
+                self.networkList.delete(*self.networkList.get_children())
                 networks = []
                 # outputs info of networks in json format
                 networkData = self.get_networks_info()
@@ -253,12 +252,10 @@ class MainWindow:
                                 self.networkList.itemconfig(networkPosition, bg='red', selectbackground='#de0303')
 
         def get_networks_info(self):
-                # json.loads
-                return loads(check_output(['zerotier-cli', '-j', 'listnetworks']))
+                return json.loads(check_output(['zerotier-cli', '-j', 'listnetworks']))
 
         def get_peers_info(self):
-                # json.loads
-                return loads(check_output(['zerotier-cli', '-j', 'peers']))
+                return json.loads(check_output(['zerotier-cli', '-j', 'peers']))
 
         def launch_sub_window(self, title):
                 subWindow = tk.Toplevel(self.window)
@@ -404,7 +401,7 @@ class MainWindow:
                         bg=self.background, fg=self.foreground
                 )
                 ztGuiVersionLabel = tk.Label(middleFrame, font="Monospace",
-                        text="{:25s}{}".format("ZeroTier GUI Version:", "1.2.1"),
+                        text="{:25s}{}".format("ZeroTier GUI Version:", "1.3.0"),
                         bg=self.background, fg=self.foreground
                 )
                 statusLabel = tk.Label(middleFrame, font="Monospace",
@@ -799,41 +796,49 @@ class MainWindow:
 
 if __name__ == "__main__":
 
-        # automates the process of copying the auth token
-        def auth_token_setup():
-                if getuid() != 0:
+    def manage_service(action):
 
-                        # get username
-                        username = check_output(['whoami']).decode()
-                        username = username.replace("\n", "")
+        if action == "start":
+            check_output(['systemctl', 'start', 'zerotier-one'])
+        elif action == "stop":
+            check_output(['systemctl', 'stop', 'zerotier-one'])
 
-                        question = messagebox.askyesno(
-                                icon="info",
-                                title="Root access needed",
-                                message=f"In order to grant {username} access "\
-                                                "to ZeroTier we need temporary root access to "\
-                                                "store the Auth Token in your home folder. "\
-                                                "Otherwise, you would need to run this "\
-                                                "program as root. Grant access?"
-                        )
+    # automates the process of copying the auth token
+    def auth_token_setup():
+            if getuid() != 0:
 
-                        if question:
+                    # get username
+                    username = check_output(['whoami']).decode()
+                    username = username.replace("\n", "")
 
-                                # copy auth token to home directory and make the user own it
-                                system( f'pkexec bash -c "cp /var/lib/zerotier-one/authtoken.secret '\
-                                                f'/home/{username}/.zeroTierOneAuthToken && chown {username} '\
-                                                f'/home/{username}/.zeroTierOneAuthToken && chmod 0600 '\
-                                                f'/home/{username}/.zeroTierOneAuthToken"'
-                                        )
+                    question = messagebox.askyesno(
+                            icon="info",
+                            title="Root access needed",
+                            message=f"In order to grant {username} access "\
+                                            "to ZeroTier we need temporary root access to "\
+                                            "store the Auth Token in your home folder. "\
+                                            "Otherwise, you would need to run this "\
+                                            "program as root. Grant access?"
+                    )
 
-                        else:
-                                _exit(0)
+                    if question:
 
-        # temporary window for popups
-        tmp = tk.Tk()
-        tmp.withdraw()
+                            # copy auth token to home directory and make the user own it
+                            system( f'pkexec bash -c "cp /var/lib/zerotier-one/authtoken.secret '\
+                                            f'/home/{username}/.zeroTierOneAuthToken && chown {username} '\
+                                            f'/home/{username}/.zeroTierOneAuthToken && chmod 0600 '\
+                                            f'/home/{username}/.zeroTierOneAuthToken"'
+                                    )
 
-        # simple check for zerotier
+                    else:
+                            _exit(0)
+
+    # temporary window for popups
+    tmp = tk.Tk()
+    tmp.withdraw()
+
+    # simple check for zerotier
+    while True:
         try:
                 check_output(['zerotier-cli', 'listnetworks'], stderr=STDOUT)
 
@@ -845,18 +850,31 @@ if __name__ == "__main__":
                         messagebox.showinfo(title="Error",
                                 message="This user doesn't have access to ZeroTier!", icon="error")
                         auth_token_setup()
+                        continue
+
                 # service not running
-                elif error.returncode == 1:
-                        messagebox.showinfo(title="Error",
-                                message='"zerotier-one" service isn\'t running!', icon="error")
+                if error.returncode == 1:
+
+                    question = messagebox.askyesno(
+                            icon="error",
+                            title="ZeroTier Service",
+                            message='The "zerotier-one" service isn\'t running! Enable?'
+                        )
+
+                    if question:
+                        manage_service("start")
+                    else:
                         _exit(1)
 
                 # in case there's no command
-                elif error.returncode == 127:
+                if error.returncode == 127:
                         messagebox.showinfo(title="Error",
                                 message="ZeroTier isn't installed!", icon="error")
                         print("ZeroTier isn't installed")
                         _exit(127)
+
+
+                break
 
         except FileNotFoundError:
             messagebox.showinfo(title="Error",
@@ -864,10 +882,12 @@ if __name__ == "__main__":
             print("ZeroTier isn't installed")
             _exit(127)
 
+        break
 
-        # destroy temporary window
-        tmp.destroy()
 
-        # create mainwindow class and execute the mainloop
-        mainWindow = MainWindow().window
-        mainWindow.mainloop()
+    # destroy temporary window
+    tmp.destroy()
+
+    # create mainwindow class and execute the mainloop
+    mainWindow = MainWindow().window
+    mainWindow.mainloop()

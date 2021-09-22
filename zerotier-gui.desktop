@@ -7,6 +7,7 @@ Terminal=false
 Comment=Linux front-end for ZeroTier
 Name=ZeroTier GUI
 GenericName=ZeroTier GUI
+StartupWMClass=zerotier-gui
 StartupNotify=false
 Categories=Utility;
 Version=1.2.2

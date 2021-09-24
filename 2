@@ -245,18 +245,16 @@ class MainWindow:
                                 networkName = "No name"
 
                         if count % 2 == 0:
-                            tags = ['even']
+                            tags = ('even')
                         else:
-                            tags = ['odd']
-
-                        if isDown:
-                            tags.append('disabled')
-
-                        tuple(tags)
+                            tags = ('odd')
 
                         self.networkList.insert(parent='', index='end', iid=count, tags=tags,
                                 text="test", values=(networkId, networkName, networkStatus)
                             )
+
+                        if isDown:
+                                self.networkList.itemconfig(networkPosition, bg='red', selectbackground='#de0303')
 
                         count += 1
 
@@ -451,13 +449,13 @@ class MainWindow:
 
         def get_interface_state(self, interface):
 
-                interfaceInfo = json.loads(check_output(["ip", "--json", "address"]).decode())
+                addressesInfo = check_output(['ip', 'address']).decode()
 
-                for info in interfaceInfo:
-                    if info["ifname"] == interface:
-                        state = info["operstate"]
-                        break
-                    state = "UNKNOWN"
+                stateLine = addressesInfo.find(interface)
+                stateStart = addressesInfo.find("state ", stateLine)
+                # 6 is the offset for the "state" word
+                stateEnd = addressesInfo.find(" ", stateStart + 6)
+                state = addressesInfo[stateStart + 6:stateEnd]
 
                 return state
 
@@ -823,9 +821,8 @@ class TreeView(ttk.Treeview):
         self.style.configure("Treeview.Heading", font=("Monospace", 12, 'bold'), background="#616161")
         self.style.configure("Treeview", font=("Monospace", 12))
         self.style.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])
-        self.tag_configure('odd', background='#fcfcfc')
-        self.tag_configure('even', background='#eeeeee')
-        self.tag_configure('disabled', background='#d14444')
+        self.tag_configure('odd', background='#E8E8E8')
+        self.tag_configure('even', background='#DFDFDF')
 
 
 if __name__ == "__main__":

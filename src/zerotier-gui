@@ -245,14 +245,12 @@ class MainWindow:
                                 networkName = "No name"
 
                         if count % 2 == 0:
-                            tags = ['even']
+                            tags = ('even')
                         else:
-                            tags = ['odd']
+                            tags = ('odd')
 
                         if isDown:
-                            tags.append('disabled')
-
-                        tuple(tags)
+                            tags = ('disabled')
 
                         self.networkList.insert(parent='', index='end', iid=count, tags=tags,
                                 text="test", values=(networkId, networkName, networkStatus)
@@ -356,7 +354,7 @@ class MainWindow:
 
                 # get selected network
                 try:
-                        self.networkList.curselection()[0]
+                        selectionId = int(self.networkList.focus())
                 except:
                         messagebox.showinfo(icon="info", title="Error", message="No network selected")
                         return
@@ -614,7 +612,7 @@ class MainWindow:
 
                 # setting up
                 try:
-                        idInList = self.networkList.curselection()[0]
+                        idInList = int(self.networkList.focus())
                 except:
                         messagebox.showinfo(icon="info", title="Error", message="No network selected")
                         return

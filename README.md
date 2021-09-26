@@ -12,7 +12,7 @@
 <img src="img/managenetworks2.png " width="1000">
 
 ### Manage Peers
-<img src="img/managepeers.png " width="500">
+<img src="img/managepeers.png " width="1000">
 
 # Installation
 

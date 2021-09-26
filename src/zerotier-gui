@@ -355,7 +355,7 @@ class MainWindow:
                 mainFrame = tk.Frame(joinWindow, padx = 20, pady = 20, bg=self.background)
 
                 joinLabel = tk.Label(mainFrame, text="Network ID:", bg=self.background, fg=self.foreground)
-                networkIdEntry = tk.Entry(mainFrame, font="Monospace", bg=self.background)
+                networkIdEntry = tk.Entry(mainFrame, font="Monospace", bg=self.background, fg=self.foreground)
                 joinButton = self.formatted_buttons(mainFrame, text="Join", bg=self.buttonBackground,
                         activebackground=self.buttonActiveBackground, command=lambda: join_network(networkIdEntry.get()))
 

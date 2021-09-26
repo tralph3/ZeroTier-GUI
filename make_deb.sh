@@ -2,7 +2,7 @@
 
 # This script will create a deb package for ZeroTier-GUI
 
-packageVersion=$(printf "1.2.1.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)")
+packageVersion=$(printf "1.3.0.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)")
 
 # Create file structure
 

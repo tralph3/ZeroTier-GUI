@@ -24,9 +24,10 @@
 ##################################
 
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 from subprocess import check_output, STDOUT, CalledProcessError
-from json import loads
+import json
 from os import getuid, system, _exit
 from webbrowser import open_new_tab
 
@@ -63,15 +64,11 @@ class MainWindow:
                 self.joinButton = self.formatted_buttons(self.topFrame,
                         text="Join Network", command=self.join_network_window)
 
-                self.tableLabels = tk.Label(self.topBottomFrame, font="Monospace",  bg="grey",
-                        text="{:19s}{:57s}{:26}".format("Network ID", "Name", "Status"), fg=self.foreground
-                )
+                self.networkListScrollbar = tk.Scrollbar(self.middleFrame, bd=2, bg=self.background)
 
-                self.networkListScrollbar = tk.Scrollbar(self.middleFrame, bd=2)
-
-                self.networkList = tk.Listbox(self.middleFrame, width="100", height="15",
-                        font="Monospace", selectmode="single", relief="flat", bg="white", fg=self.foreground
-                )
+                self.networkList = TreeView(self.middleFrame, "Network ID", "Name", "Status")
+                self.networkList.column("Network ID", width=40)
+                self.networkList.column("Status", width=40)
 
                 self.networkList.bind('<Double-Button-1>', self.call_see_network_info)
 
@@ -99,8 +96,6 @@ class MainWindow:
                 self.peersButton.pack(side="right", anchor="sw")
                 self.joinButton.pack(side="right", anchor="se")
 
-                self.tableLabels.pack(side="left", fill="x")
-
                 self.networkListScrollbar.pack(side="right", fill="both")
                 self.networkList.pack(side="bottom", fill="x")
 
@@ -109,7 +104,7 @@ class MainWindow:
                 self.infoButton.pack(side="right", fill="x")
                 self.ztCentralButton.pack(side="right", fill="x")
                 self.toggleServiceButton.pack(side="right", fill="x")
-                self.serviceStatusLabel.pack(side="right", fill="x")
+                self.serviceStatusLabel.pack(side="right", fill="x", padx=(100,0))
 
                 # frames
                 self.topFrame.pack(side="top", fill="x")
@@ -127,10 +122,10 @@ class MainWindow:
         def toggle_service(self):
                 state = self.get_service_status()
                 if  state == 'active':
-                        check_output(['systemctl', 'stop', 'zerotier-one'])
+                        manage_service("stop")
                         self.update_service_label()
                 else:
-                        check_output(['systemctl', 'start', 'zerotier-one'])
+                        manage_service("start")
                         self.update_service_label()
 
         def get_service_status(self):
@@ -156,26 +151,34 @@ class MainWindow:
 
         def refresh_paths(self, pathsList, idInList):
 
-                pathsList.delete(0, 'end')
+                pathsList.delete(*pathsList.get_children())
                 paths = []
                 # outputs info of paths in json format
                 pathsData = self.get_peers_info()[idInList]['paths']
 
                 # get paths information in a list of tuples
                 for pathPosition in range(len(pathsData)):
-                        paths.append((
-                                pathsData[pathPosition]['active'],
-                                pathsData[pathPosition]['address'],
-                                pathsData[pathPosition]['expired'],
-                                pathsData[pathPosition]['lastReceive'],
-                                pathsData[pathPosition]['lastSend'],
-                                pathsData[pathPosition]['preferred'],
-                                pathsData[pathPosition]['trustedPathId']
-                        ))
+                    paths.append((
+                            pathsData[pathPosition]['active'],
+                            pathsData[pathPosition]['address'],
+                            pathsData[pathPosition]['expired'],
+                            pathsData[pathPosition]['lastReceive'],
+                            pathsData[pathPosition]['lastSend'],
+                            pathsData[pathPosition]['preferred'],
+                            pathsData[pathPosition]['trustedPathId']
+                    ))
 
                 # set paths in listbox
+                count = 0
                 for pathActive, pathAddress, pathExpired, pathLastReceive, pathLastSend, pathPreferred, pathTrustedId in paths:
-                        pathsList.insert('end', '{:6s} | {:44s} | {:7s} | {:13s} | {:13s} | {:9s} | {}'.format(
+
+                        if count % 2 == 0:
+                            tags = ('even')
+                        else:
+                            tags = ('odd')
+
+                        pathsList.insert(parent='', index='end', iid=count, tags=tags,
+                            values=(
                                 str(pathActive),
                                 str(pathAddress),
                                 str(pathExpired),
@@ -183,11 +186,15 @@ class MainWindow:
                                 str(pathLastSend),
                                 str(pathPreferred),
                                 str(pathTrustedId)
-                        ))
+                            )
+                        )
+
+                        count += 1
+
 
         def refresh_peers(self, peersList):
 
-                peersList.delete(0, 'end')
+                peersList.delete(*peersList.get_children())
                 peers = []
                 # outputs info of peers in json format
                 peersData = self.get_peers_info()
@@ -202,20 +209,26 @@ class MainWindow:
                         ))
 
                 # set peers in listbox
+                count = 0
                 for peerAddress, peerVersion, peerRole, peerLatency in peers:
 
                         if peerVersion == "-1.-1.-1":
                                 peerVersion = "-"
-                        peersList.insert('end', '{} | {:10s} | {:10s} | {:4s}'.format(
-                                peerAddress,
-                                peerVersion,
-                                peerRole,
-                                str(peerLatency)
-                        ))
+
+                        if count % 2 == 0:
+                            tags = ('even')
+                        else:
+                            tags = ('odd')
+
+                        peersList.insert(parent='', index='end', iid=count, tags=tags,
+                                values=(peerAddress, peerVersion, peerRole, peerLatency))
+
+                        count += 1
+
 
         def refresh_networks(self):
 
-                self.networkList.delete(0, 'end')
+                self.networkList.delete(*self.networkList.get_children())
                 networks = []
                 # outputs info of networks in json format
                 networkData = self.get_networks_info()
@@ -239,26 +252,31 @@ class MainWindow:
                         ))
 
                 # set networks in listbox
+                count = 0
                 for networkId, networkName, networkStatus, isDown, networkPosition in networks:
 
                         if not networkName:
                                 networkName = "No name"
-                        self.networkList.insert('end', '{} | {:55s} |{}'.format(
-                                networkId,
-                                networkName,
-                                networkStatus
-                        ))
+
+                        if count % 2 == 0:
+                            tags = ('even')
+                        else:
+                            tags = ('odd')
 
                         if isDown:
-                                self.networkList.itemconfig(networkPosition, bg='red', selectbackground='#de0303')
+                            tags = ('disabled')
+
+                        self.networkList.insert(parent='', index='end', iid=count, tags=tags,
+                                values=(networkId, networkName, networkStatus)
+                            )
+
+                        count += 1
 
         def get_networks_info(self):
-                # json.loads
-                return loads(check_output(['zerotier-cli', '-j', 'listnetworks']))
+                return json.loads(check_output(['zerotier-cli', '-j', 'listnetworks']))
 
         def get_peers_info(self):
-                # json.loads
-                return loads(check_output(['zerotier-cli', '-j', 'peers']))
+                return json.loads(check_output(['zerotier-cli', '-j', 'peers']))
 
         def launch_sub_window(self, title):
                 subWindow = tk.Toplevel(self.window, class_='zerotier-gui')
@@ -272,15 +290,16 @@ class MainWindow:
 
                 entry = tk.Entry(
                         frame,
-                        relief="flat",
+                        relief=tk.FLAT,
                         bg=self.background,
+                        highlightthickness=0,
                         highlightcolor=self.background,
                         fg=self.foreground,
                         selectforeground=self.foreground,
                         selectborderwidth=0,
                         justify=justify,
                         font=font,
-                        bd=0
+                        bd=0,
                 )
 
                 entry.insert(0, text)
@@ -330,19 +349,20 @@ class MainWindow:
                         joinWindow.destroy()
 
                 joinWindow = self.launch_sub_window("Join Network")
+                joinWindow.configure(bg=self.background)
 
                 # widgets
-                mainFrame = tk.Frame(joinWindow, padx = 20, pady = 20)
+                mainFrame = tk.Frame(joinWindow, padx = 20, pady = 20, bg=self.background)
 
-                joinLabel = tk.Label(mainFrame, text="Network ID:")
-                networkIdEntry = tk.Entry(mainFrame, font="Monospace")
+                joinLabel = tk.Label(mainFrame, text="Network ID:", bg=self.background, fg=self.foreground)
+                networkIdEntry = tk.Entry(mainFrame, font="Monospace", bg=self.background, fg=self.foreground)
                 joinButton = self.formatted_buttons(mainFrame, text="Join", bg=self.buttonBackground,
                         activebackground=self.buttonActiveBackground, command=lambda: join_network(networkIdEntry.get()))
 
                 # pack widgets
-                joinLabel.pack(side="top", anchor="w")
-                networkIdEntry.pack(side="top", fill="x")
-                joinButton.pack(side="top", fill="x")
+                joinLabel.pack(side="top", anchor="w", pady=10)
+                networkIdEntry.pack(side="top", fill="x", pady=(0,10))
+                joinButton.pack(side="top", fill="x", pady=10)
 
                 mainFrame.pack(side="top", fill="x")
 
@@ -350,16 +370,19 @@ class MainWindow:
 
                 # get selected network
                 try:
-                        self.networkList.curselection()[0]
+                        selectionId = int(self.networkList.focus())
+                        selectionInfo = self.networkList.item(selectionId)
                 except:
                         messagebox.showinfo(icon="info", title="Error", message="No network selected")
                         return
 
-                network = self.networkList.get('active')
-                network = network[:network.find(" ")]
+                print(selectionInfo)
+
+                network = selectionInfo["values"][0]
+                networkName = selectionInfo["values"][1]
 
                 answer = messagebox.askyesno(title="Leave Network",
-                        message=f"Are you sure you want to leave {network}?")
+                        message=f"Are you sure you want to leave \"{networkName}\" (ID: {network})?")
 
                 if answer:
                         try:
@@ -404,7 +427,7 @@ class MainWindow:
                         bg=self.background, fg=self.foreground
                 )
                 ztGuiVersionLabel = tk.Label(middleFrame, font="Monospace",
-                        text="{:25s}{}".format("ZeroTier GUI Version:", "1.2.1"),
+                        text="{:25s}{}".format("ZeroTier GUI Version:", "1.3.0"),
                         bg=self.background, fg=self.foreground
                 )
                 statusLabel = tk.Label(middleFrame, font="Monospace",
@@ -445,13 +468,13 @@ class MainWindow:
 
         def get_interface_state(self, interface):
 
-                addressesInfo = check_output(['ip', 'address']).decode()
+                interfaceInfo = json.loads(check_output(["ip", "--json", "address"]).decode())
 
-                stateLine = addressesInfo.find(interface)
-                stateStart = addressesInfo.find("state ", stateLine)
-                # 6 is the offset for the "state" word
-                stateEnd = addressesInfo.find(" ", stateStart + 6)
-                state = addressesInfo[stateStart + 6:stateEnd]
+                for info in interfaceInfo:
+                    if info["ifname"] == interface:
+                        state = info["operstate"]
+                        break
+                    state = "UNKNOWN"
 
                 return state
 
@@ -459,7 +482,7 @@ class MainWindow:
 
                 # setting up
                 try:
-                        idInList = self.networkList.curselection()[0]
+                        idInList = int(self.networkList.focus())
                 except:
                         messagebox.showinfo(icon="info", title="Error", message="No network selected")
                         return
@@ -482,12 +505,16 @@ class MainWindow:
 
                 # setting up
                 try:
-                        idInList = peerList.curselection()[0]
+                        idInList = int(peerList.focus())
                 except:
                         messagebox.showinfo(icon="info", title="Error", message="No peer selected")
                         return
 
+                info = peerList.item(idInList)
+                peerId = info["values"][0]
+
                 pathsWindow = self.launch_sub_window("Peer Path")
+                pathsWindow.configure(bg=self.background)
 
                 # frames
                 topFrame = tk.Frame(pathsWindow, padx = 20, bg=self.background)
@@ -495,22 +522,12 @@ class MainWindow:
                 bottomFrame = tk.Frame(pathsWindow, padx = 20, pady = 10, bg=self.background)
 
                 # widgets
-                tableLabels = tk.Label(topFrame, font="Monospace",
-                        bg="grey", fg=self.foreground,
-                        text="{:9s}{:47s}{:10s}{:16s}{:16s}{:12s}{:17s}".format(
-                                "Active",
-                                "Address",
-                                "Expired",
-                                "Last Receive",
-                                "Last Send",
-                                "Preferred",
-                                "Trusted Path ID"
-                        )
-                )
-
-                pathsListScrollbar = tk.Scrollbar(middleFrame, bd=2)
-                pathsList = tk.Listbox(middleFrame, height="15", font="Monospace",
-                        selectmode="single", relief="flat", bg="white", fg=self.foreground)
+                peerIdLabel = tk.Label(topFrame, font=40, bg=self.background, fg=self.foreground,
+                        text=f"Seeing paths for peer with ID \"{str(peerId)}\""
+                   )
+                pathsListScrollbar = tk.Scrollbar(middleFrame, bd=2, bg=self.background)
+                pathsList = TreeView(middleFrame, "Active", "Address", "Expired",
+                        "Last Receive", "Last Send", "Preferred", "Trusted Path ID")
 
                 closeButton = self.formatted_buttons(bottomFrame, text="Close", bg=self.buttonBackground,
                         activebackground=self.buttonActiveBackground, command=lambda: pathsWindow.destroy())
@@ -518,8 +535,7 @@ class MainWindow:
                         activebackground=self.buttonActiveBackground, command=lambda: self.refresh_paths(pathsList, idInList))
 
                 # pack widgets
-                tableLabels.pack(side="left", fill="both")
-
+                peerIdLabel.pack(side="left", fill="both")
                 pathsListScrollbar.pack(side="right", fill="both")
                 pathsList.pack(side="bottom", fill="x")
 
@@ -539,13 +555,13 @@ class MainWindow:
 
                 pathsWindow.mainloop()
 
-
         def see_peers(self):
 
-                def call_see_peer_paths(event):
+                def call_see_peer_paths(_event):
                         self.see_peer_paths(peersList)
 
                 peersWindow = self.launch_sub_window("Peers")
+                peersWindow.configure(bg=self.background)
 
                 # frames
                 topFrame = tk.Frame(peersWindow, padx = 20, bg=self.background)
@@ -553,22 +569,8 @@ class MainWindow:
                 bottomFrame = tk.Frame(peersWindow, padx = 20, pady = 10, bg=self.background)
 
                 # widgets
-                tableLabels = tk.Label(topFrame, font="Monospace",
-                        bg="grey", fg=self.foreground,
-                        text="{:13s}{:13s}{:13s}{:13s}".format(
-                                "ZT Address",
-                                "Version",
-                                "Role",
-                                "Latency"
-                        )
-                )
-
-                peersListScrollbar = tk.Scrollbar(middleFrame, bd=2)
-                peersList = tk.Listbox(middleFrame, width="50", height="15",
-                        font="Monospace", selectmode="single", relief="flat",
-                        bg="white", fg=self.foreground
-                )
-
+                peersListScrollbar = tk.Scrollbar(middleFrame, bd=2, bg=self.background)
+                peersList = TreeView(middleFrame, "ZT Address", "Version", "Role", "Latency")
                 peersList.bind('<Double-Button-1>', call_see_peer_paths)
 
                 closeButton = self.formatted_buttons(bottomFrame, text="Close", bg=self.buttonBackground,
@@ -582,8 +584,6 @@ class MainWindow:
                 )
 
                 # pack widgets
-                tableLabels.pack(side="left", fill="both")
-
                 peersListScrollbar.pack(side="right", fill="both")
                 peersList.pack(side="bottom", fill="x")
 
@@ -608,7 +608,7 @@ class MainWindow:
 
                 # setting up
                 try:
-                        idInList = self.networkList.curselection()[0]
+                        idInList = int(self.networkList.focus())
                 except:
                         messagebox.showinfo(icon="info", title="Error", message="No network selected")
                         return
@@ -710,7 +710,7 @@ class MainWindow:
                 )
                 allowDefaultCheck = tk.Checkbutton(allowDefaultFrame, variable=allowDefault,
                         command=lambda: change_config("allowDefault", allowDefault.get()),
-                        bg=self.background, fg=self.foreground
+                        bg=self.background, fg=self.foreground, highlightthickness=0
                 )
 
                 allowGlobalLabel = tk.Label(allowGlobalFrame, font="Monospace",
@@ -719,7 +719,7 @@ class MainWindow:
                 )
                 allowGlobalCheck = tk.Checkbutton(allowGlobalFrame, variable=allowGlobal,
                         command=lambda: change_config("allowGlobal", allowGlobal.get()),
-                        bg=self.background, fg=self.foreground
+                        bg=self.background, fg=self.foreground, highlightthickness=0
                 )
 
                 allowManagedLabel = tk.Label(allowManagedFrame, font="Monospace",
@@ -728,7 +728,7 @@ class MainWindow:
                 )
                 allowManagedCheck = tk.Checkbutton(allowManagedFrame, variable=allowManaged,
                         command=lambda: change_config("allowManaged", allowManaged.get()),
-                        bg=self.background, fg=self.foreground
+                        bg=self.background, fg=self.foreground, highlightthickness=0
                 )
 
                 closeButton = self.formatted_buttons(bottomFrame, text="Close", bg=self.buttonBackground,
@@ -740,7 +740,7 @@ class MainWindow:
                 nameLabel.pack(side="top", anchor="w")
                 idLabel.pack(side="top", anchor="w")
 
-                        # assigned addresses
+                # assigned addresses
                 for widget in assignedAddressesWidgets:
                         widget.pack(side="top", anchor="w")
 
@@ -797,43 +797,75 @@ class MainWindow:
                 # needed to stop local variables from being destroyed before the window
                 infoWindow.mainloop()
 
+class TreeView(ttk.Treeview):
+
+    def __init__(self, root, *columns):
+        super().__init__(root)
+
+        self["columns"] = tuple(columns)
+        self.column("#0", width=0, stretch=tk.NO)
+
+        for label in columns:
+            self.heading(label, text=label)
+
+        self.configure_style()
+
+    def configure_style(self):
+
+        self.style = ttk.Style()
+        self.style.configure("Treeview.Heading", font=("Monospace", 12))
+        self.style.configure("Treeview", font=("Monospace", 12))
+        self.style.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])
+        self.tag_configure('odd', background='#fcfcfc')
+        self.tag_configure('even', background='#eeeeee')
+        self.tag_configure('disabled', background='#d14444')
+
+
 if __name__ == "__main__":
 
-        # automates the process of copying the auth token
-        def auth_token_setup():
-                if getuid() != 0:
+    def manage_service(action):
 
-                        # get username
-                        username = check_output(['whoami']).decode()
-                        username = username.replace("\n", "")
+        if action == "start":
+            check_output(['systemctl', 'start', 'zerotier-one'])
+        elif action == "stop":
+            check_output(['systemctl', 'stop', 'zerotier-one'])
 
-                        question = messagebox.askyesno(
-                                icon="info",
-                                title="Root access needed",
-                                message=f"In order to grant {username} access "\
-                                                "to ZeroTier we need temporary root access to "\
-                                                "store the Auth Token in your home folder. "\
-                                                "Otherwise, you would need to run this "\
-                                                "program as root. Grant access?"
-                        )
+    # automates the process of copying the auth token
+    def auth_token_setup():
+            if getuid() != 0:
 
-                        if question:
+                    # get username
+                    username = check_output(['whoami']).decode()
+                    username = username.replace("\n", "")
 
-                                # copy auth token to home directory and make the user own it
-                                system( f'pkexec bash -c "cp /var/lib/zerotier-one/authtoken.secret '\
-                                                f'/home/{username}/.zeroTierOneAuthToken && chown {username} '\
-                                                f'/home/{username}/.zeroTierOneAuthToken && chmod 0600 '\
-                                                f'/home/{username}/.zeroTierOneAuthToken"'
-                                        )
+                    question = messagebox.askyesno(
+                            icon="info",
+                            title="Root access needed",
+                            message=f"In order to grant {username} access "\
+                                            "to ZeroTier we need temporary root access to "\
+                                            "store the Auth Token in your home folder. "\
+                                            "Otherwise, you would need to run this "\
+                                            "program as root. Grant access?"
+                    )
 
-                        else:
-                                _exit(0)
+                    if question:
 
-        # temporary window for popups
-        tmp = tk.Tk()
-        tmp.withdraw()
+                            # copy auth token to home directory and make the user own it
+                            system( f'pkexec bash -c "cp /var/lib/zerotier-one/authtoken.secret '\
+                                            f'/home/{username}/.zeroTierOneAuthToken && chown {username} '\
+                                            f'/home/{username}/.zeroTierOneAuthToken && chmod 0600 '\
+                                            f'/home/{username}/.zeroTierOneAuthToken"'
+                                    )
 
-        # simple check for zerotier
+                    else:
+                            _exit(0)
+
+    # temporary window for popups
+    tmp = tk.Tk()
+    tmp.withdraw()
+
+    # simple check for zerotier
+    while True:
         try:
                 check_output(['zerotier-cli', 'listnetworks'], stderr=STDOUT)
 
@@ -845,18 +877,31 @@ if __name__ == "__main__":
                         messagebox.showinfo(title="Error",
                                 message="This user doesn't have access to ZeroTier!", icon="error")
                         auth_token_setup()
+                        continue
+
                 # service not running
-                elif error.returncode == 1:
-                        messagebox.showinfo(title="Error",
-                                message='"zerotier-one" service isn\'t running!', icon="error")
+                if error.returncode == 1:
+
+                    question = messagebox.askyesno(
+                            icon="error",
+                            title="ZeroTier Service",
+                            message='The "zerotier-one" service isn\'t running! Enable?'
+                        )
+
+                    if question:
+                        manage_service("start")
+                    else:
                         _exit(1)
 
                 # in case there's no command
-                elif error.returncode == 127:
+                if error.returncode == 127:
                         messagebox.showinfo(title="Error",
                                 message="ZeroTier isn't installed!", icon="error")
                         print("ZeroTier isn't installed")
                         _exit(127)
+
+
+                break
 
         except FileNotFoundError:
             messagebox.showinfo(title="Error",
@@ -864,10 +909,12 @@ if __name__ == "__main__":
             print("ZeroTier isn't installed")
             _exit(127)
 
+        break
 
-        # destroy temporary window
-        tmp.destroy()
 
-        # create mainwindow class and execute the mainloop
-        mainWindow = MainWindow().window
-        mainWindow.mainloop()
+    # destroy temporary window
+    tmp.destroy()
+
+    # create mainwindow class and execute the mainloop
+    mainWindow = MainWindow().window
+    mainWindow.mainloop()

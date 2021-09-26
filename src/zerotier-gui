@@ -64,7 +64,7 @@ class MainWindow:
                 self.joinButton = self.formatted_buttons(self.topFrame,
                         text="Join Network", command=self.join_network_window)
 
-                self.networkListScrollbar = tk.Scrollbar(self.middleFrame, bd=2)
+                self.networkListScrollbar = tk.Scrollbar(self.middleFrame, bd=2, bg=self.background)
 
                 self.networkList = TreeView(self.middleFrame, "Network ID", "Name", "Status")
                 self.networkList.column("Network ID", width=40)
@@ -151,26 +151,34 @@ class MainWindow:
 
         def refresh_paths(self, pathsList, idInList):
 
-                pathsList.delete(0, 'end')
+                pathsList.delete(*pathsList.get_children())
                 paths = []
                 # outputs info of paths in json format
                 pathsData = self.get_peers_info()[idInList]['paths']
 
                 # get paths information in a list of tuples
                 for pathPosition in range(len(pathsData)):
-                        paths.append((
-                                pathsData[pathPosition]['active'],
-                                pathsData[pathPosition]['address'],
-                                pathsData[pathPosition]['expired'],
-                                pathsData[pathPosition]['lastReceive'],
-                                pathsData[pathPosition]['lastSend'],
-                                pathsData[pathPosition]['preferred'],
-                                pathsData[pathPosition]['trustedPathId']
-                        ))
+                    paths.append((
+                            pathsData[pathPosition]['active'],
+                            pathsData[pathPosition]['address'],
+                            pathsData[pathPosition]['expired'],
+                            pathsData[pathPosition]['lastReceive'],
+                            pathsData[pathPosition]['lastSend'],
+                            pathsData[pathPosition]['preferred'],
+                            pathsData[pathPosition]['trustedPathId']
+                    ))
 
                 # set paths in listbox
+                count = 0
                 for pathActive, pathAddress, pathExpired, pathLastReceive, pathLastSend, pathPreferred, pathTrustedId in paths:
-                        pathsList.insert('end', '{:6s} | {:44s} | {:7s} | {:13s} | {:13s} | {:9s} | {}'.format(
+
+                        if count % 2 == 0:
+                            tags = ('even')
+                        else:
+                            tags = ('odd')
+
+                        pathsList.insert(parent='', index='end', iid=count, tags=tags,
+                            values=(
                                 str(pathActive),
                                 str(pathAddress),
                                 str(pathExpired),
@@ -178,11 +186,15 @@ class MainWindow:
                                 str(pathLastSend),
                                 str(pathPreferred),
                                 str(pathTrustedId)
-                        ))
+                            )
+                        )
+
+                        count += 1
+
 
         def refresh_peers(self, peersList):
 
-                peersList.delete(0, 'end')
+                peersList.delete(*peersList.get_children())
                 peers = []
                 # outputs info of peers in json format
                 peersData = self.get_peers_info()
@@ -197,16 +209,22 @@ class MainWindow:
                         ))
 
                 # set peers in listbox
+                count = 0
                 for peerAddress, peerVersion, peerRole, peerLatency in peers:
 
                         if peerVersion == "-1.-1.-1":
                                 peerVersion = "-"
-                        peersList.insert('end', '{} | {:10s} | {:10s} | {:4s}'.format(
-                                peerAddress,
-                                peerVersion,
-                                peerRole,
-                                str(peerLatency)
-                        ))
+
+                        if count % 2 == 0:
+                            tags = ('even')
+                        else:
+                            tags = ('odd')
+
+                        peersList.insert(parent='', index='end', iid=count, tags=tags,
+                                values=(peerAddress, peerVersion, peerRole, peerLatency))
+
+                        count += 1
+
 
         def refresh_networks(self):
 
@@ -249,7 +267,7 @@ class MainWindow:
                             tags = ('disabled')
 
                         self.networkList.insert(parent='', index='end', iid=count, tags=tags,
-                                text="test", values=(networkId, networkName, networkStatus)
+                                values=(networkId, networkName, networkStatus)
                             )
 
                         count += 1
@@ -331,19 +349,20 @@ class MainWindow:
                         joinWindow.destroy()
 
                 joinWindow = self.launch_sub_window("Join Network")
+                joinWindow.configure(bg=self.background)
 
                 # widgets
-                mainFrame = tk.Frame(joinWindow, padx = 20, pady = 20)
+                mainFrame = tk.Frame(joinWindow, padx = 20, pady = 20, bg=self.background)
 
-                joinLabel = tk.Label(mainFrame, text="Network ID:")
-                networkIdEntry = tk.Entry(mainFrame, font="Monospace")
+                joinLabel = tk.Label(mainFrame, text="Network ID:", bg=self.background, fg=self.foreground)
+                networkIdEntry = tk.Entry(mainFrame, font="Monospace", bg=self.background)
                 joinButton = self.formatted_buttons(mainFrame, text="Join", bg=self.buttonBackground,
                         activebackground=self.buttonActiveBackground, command=lambda: join_network(networkIdEntry.get()))
 
                 # pack widgets
-                joinLabel.pack(side="top", anchor="w")
-                networkIdEntry.pack(side="top", fill="x")
-                joinButton.pack(side="top", fill="x")
+                joinLabel.pack(side="top", anchor="w", pady=10)
+                networkIdEntry.pack(side="top", fill="x", pady=(0,10))
+                joinButton.pack(side="top", fill="x", pady=10)
 
                 mainFrame.pack(side="top", fill="x")
 
@@ -486,12 +505,16 @@ class MainWindow:
 
                 # setting up
                 try:
-                        idInList = peerList.curselection()[0]
+                        idInList = int(peerList.focus())
                 except:
                         messagebox.showinfo(icon="info", title="Error", message="No peer selected")
                         return
 
+                info = peerList.item(idInList)
+                peerId = info["values"][0]
+
                 pathsWindow = self.launch_sub_window("Peer Path")
+                pathsWindow.configure(bg=self.background)
 
                 # frames
                 topFrame = tk.Frame(pathsWindow, padx = 20, bg=self.background)
@@ -499,22 +522,12 @@ class MainWindow:
                 bottomFrame = tk.Frame(pathsWindow, padx = 20, pady = 10, bg=self.background)
 
                 # widgets
-                tableLabels = tk.Label(topFrame, font="Monospace",
-                        bg="grey", fg=self.foreground,
-                        text="{:9s}{:47s}{:10s}{:16s}{:16s}{:12s}{:17s}".format(
-                                "Active",
-                                "Address",
-                                "Expired",
-                                "Last Receive",
-                                "Last Send",
-                                "Preferred",
-                                "Trusted Path ID"
-                        )
-                )
-
-                pathsListScrollbar = tk.Scrollbar(middleFrame, bd=2)
-                pathsList = tk.Listbox(middleFrame, height="15", font="Monospace",
-                        selectmode="single", relief="flat", bg="white", fg=self.foreground)
+                peerIdLabel = tk.Label(topFrame, font=40, bg=self.background, fg=self.foreground,
+                        text=f"Seeing paths for peer with ID \"{str(peerId)}\""
+                   )
+                pathsListScrollbar = tk.Scrollbar(middleFrame, bd=2, bg=self.background)
+                pathsList = TreeView(middleFrame, "Active", "Address", "Expired",
+                        "Last Receive", "Last Send", "Preferred", "Trusted Path ID")
 
                 closeButton = self.formatted_buttons(bottomFrame, text="Close", bg=self.buttonBackground,
                         activebackground=self.buttonActiveBackground, command=lambda: pathsWindow.destroy())
@@ -522,8 +535,7 @@ class MainWindow:
                         activebackground=self.buttonActiveBackground, command=lambda: self.refresh_paths(pathsList, idInList))
 
                 # pack widgets
-                tableLabels.pack(side="left", fill="both")
-
+                peerIdLabel.pack(side="left", fill="both")
                 pathsListScrollbar.pack(side="right", fill="both")
                 pathsList.pack(side="bottom", fill="x")
 
@@ -543,13 +555,13 @@ class MainWindow:
 
                 pathsWindow.mainloop()
 
-
         def see_peers(self):
 
-                def call_see_peer_paths(event):
+                def call_see_peer_paths(_event):
                         self.see_peer_paths(peersList)
 
                 peersWindow = self.launch_sub_window("Peers")
+                peersWindow.configure(bg=self.background)
 
                 # frames
                 topFrame = tk.Frame(peersWindow, padx = 20, bg=self.background)
@@ -557,22 +569,8 @@ class MainWindow:
                 bottomFrame = tk.Frame(peersWindow, padx = 20, pady = 10, bg=self.background)
 
                 # widgets
-                tableLabels = tk.Label(topFrame, font="Monospace",
-                        bg="grey", fg=self.foreground,
-                        text="{:13s}{:13s}{:13s}{:13s}".format(
-                                "ZT Address",
-                                "Version",
-                                "Role",
-                                "Latency"
-                        )
-                )
-
-                peersListScrollbar = tk.Scrollbar(middleFrame, bd=2)
-                peersList = tk.Listbox(middleFrame, width="50", height="15",
-                        font="Monospace", selectmode="single", relief="flat",
-                        bg="white", fg=self.foreground
-                )
-
+                peersListScrollbar = tk.Scrollbar(middleFrame, bd=2, bg=self.background)
+                peersList = TreeView(middleFrame, "ZT Address", "Version", "Role", "Latency")
                 peersList.bind('<Double-Button-1>', call_see_peer_paths)
 
                 closeButton = self.formatted_buttons(bottomFrame, text="Close", bg=self.buttonBackground,
@@ -586,8 +584,6 @@ class MainWindow:
                 )
 
                 # pack widgets
-                tableLabels.pack(side="left", fill="both")
-
                 peersListScrollbar.pack(side="right", fill="both")
                 peersList.pack(side="bottom", fill="x")
 
@@ -817,7 +813,7 @@ class TreeView(ttk.Treeview):
     def configure_style(self):
 
         self.style = ttk.Style()
-        self.style.configure("Treeview.Heading", font=("Monospace", 12), background="#616161", foreground="#FFFFFF")
+        self.style.configure("Treeview.Heading", font=("Monospace", 12))
         self.style.configure("Treeview", font=("Monospace", 12))
         self.style.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])
         self.tag_configure('odd', background='#fcfcfc')

@@ -626,6 +626,7 @@ class MainWindow:
                 allowDefaultFrame = tk.Frame(infoWindow, padx=20, bg=self.background)
                 allowGlobalFrame = tk.Frame(infoWindow, padx=20, bg=self.background)
                 allowManagedFrame = tk.Frame(infoWindow, padx=20, bg=self.background)
+                allowDNSFrame = tk.Frame(infoWindow, padx=20, bg=self.background)
 
                 bottomFrame = tk.Frame(infoWindow, pady=10, bg=self.background)
 
@@ -633,10 +634,12 @@ class MainWindow:
                 allowDefault = tk.BooleanVar()
                 allowGlobal = tk.BooleanVar()
                 allowManaged = tk.BooleanVar()
+                allowDNS = tk.BooleanVar()
 
                 allowDefault.set(currentNetworkInfo['allowDefault'])
                 allowGlobal.set(currentNetworkInfo['allowGlobal'])
                 allowManaged.set(currentNetworkInfo['allowManaged'])
+                allowDNS.set(currentNetworkInfo['allowDNS'])
 
                 # assigned addresses widget generation
                 try:
@@ -731,6 +734,15 @@ class MainWindow:
                         bg=self.background, fg=self.foreground, highlightthickness=0
                 )
 
+                allowDNSLabel = tk.Label(allowDNSFrame, font="Monospace",
+                        text="{:24s}".format("Allow DNS Configuration"),
+                        bg=self.background, fg=self.foreground
+                )
+                allowDNSCheck = tk.Checkbutton(allowDNSFrame, variable=allowDNS,
+                        command=lambda: change_config("allowDNS", allowDNS.get()),
+                        bg=self.background, fg=self.foreground, highlightthickness=0
+                )
+
                 closeButton = self.formatted_buttons(bottomFrame, text="Close", bg=self.buttonBackground,
                         activebackground=self.buttonActiveBackground, command=lambda: infoWindow.destroy())
 
@@ -762,6 +774,9 @@ class MainWindow:
                 allowManagedLabel.pack(side="left", anchor="w")
                 allowManagedCheck.pack(side="left", anchor="w")
 
+                allowDNSLabel.pack(side="left", anchor="w")
+                allowDNSCheck.pack(side="left", anchor="w")
+
                 closeButton.pack(side="top")
 
                 topFrame.pack(side="top", fill="both")
@@ -770,6 +785,7 @@ class MainWindow:
                 allowDefaultFrame.pack(side="top", fill="both")
                 allowGlobalFrame.pack(side="top", fill="both")
                 allowManagedFrame.pack(side="top", fill="both")
+                allowDNSFrame.pack(side="top", fill="both")
 
                 bottomFrame.pack(side="top", fill="both")
 

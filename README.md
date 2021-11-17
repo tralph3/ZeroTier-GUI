@@ -29,13 +29,13 @@ You may need to mark it as executable first:
 
 **The script must be ran on the project's root folder, make sure to `cd` into it.**
 
-The script will generate a `ZeroTier-GUI.deb` package in the root directory. Simply install it with `dpkg -i Zerotier-GUI.deb`. You may need to run `apt -f install` afterwards to install dependencies if unmet.
+The script will generate a `ZeroTier-GUI.deb` package in the root directory. Simply install it with `sudo apt install ./ZeroTier-GUI.deb`.
 
 # Building binaries with Docker
 
 ## Objective
 
-This alternative aims to make zero-tier-gui available for multiple platforms using immutable infrastructure benefits, to avoid unexpected results depending where you are running these commands above.
+This alternative aims to make ZeroTier-GUI available for multiple platforms using immutable infrastructure benefits, to avoid unexpected results depending where you are running these commands above.
 
 ## Setup
 

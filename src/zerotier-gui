@@ -615,7 +615,7 @@ class MainWindow:
         ztGuiVersionLabel = tk.Label(
             middleFrame,
             font="Monospace",
-            text="{:25s}{}".format("ZeroTier GUI Version:", "1.3.0"),
+            text="{:25s}{}".format("ZeroTier GUI Version:", "1.4.0"),
             bg=BACKGROUND,
             fg=FOREGROUND,
         )

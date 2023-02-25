@@ -55,7 +55,9 @@ class MainWindow:
         self.topFrame = tk.Frame(self.window, padx=20, pady=10, bg=BACKGROUND)
         self.topBottomFrame = tk.Frame(self.window, padx=20, bg=BACKGROUND)
         self.middleFrame = tk.Frame(self.window, padx=20, bg=BACKGROUND)
-        self.bottomFrame = tk.Frame(self.window, padx=20, pady=10, bg=BACKGROUND)
+        self.bottomFrame = tk.Frame(
+            self.window, padx=20, pady=10, bg=BACKGROUND
+        )
 
         # widgets
         self.networkLabel = tk.Label(
@@ -82,9 +84,13 @@ class MainWindow:
             command=self.create_join_network_window,
         )
 
-        self.networkListScrollbar = tk.Scrollbar(self.middleFrame, bd=2, bg=BACKGROUND)
+        self.networkListScrollbar = tk.Scrollbar(
+            self.middleFrame, bd=2, bg=BACKGROUND
+        )
 
-        self.networkList = TreeView(self.middleFrame, "Network ID", "Name", "Status")
+        self.networkList = TreeView(
+            self.middleFrame, "Network ID", "Name", "Status"
+        )
         self.networkList.column("Network ID", width=40)
         self.networkList.column("Status", width=40)
 
@@ -160,7 +166,9 @@ class MainWindow:
         self.networkListScrollbar.config(command=self.networkList.yview)
 
     def load_network_history(self):
-        history_file_path = path.join(HISTORY_FILE_DIRECTORY, HISTORY_FILE_NAME)
+        history_file_path = path.join(
+            HISTORY_FILE_DIRECTORY, HISTORY_FILE_NAME
+        )
         if not path.isfile(history_file_path):
             makedirs(HISTORY_FILE_DIRECTORY, exist_ok=True)
             with open(history_file_path, "w") as f:
@@ -295,7 +303,9 @@ class MainWindow:
         ) in networks:
             if not networkName:
                 networkName = "Unknown Name"
-            self.networkList.insert((networkId, networkName, networkStatus), isDown)
+            self.networkList.insert(
+                (networkId, networkName, networkStatus), isDown
+            )
 
         self.update_network_history_names()
 
@@ -308,7 +318,9 @@ class MainWindow:
                 self.network_history[network_id]["name"] = network_name
 
     def save_network_history(self):
-        history_file_path = path.join(HISTORY_FILE_DIRECTORY, HISTORY_FILE_NAME)
+        history_file_path = path.join(
+            HISTORY_FILE_DIRECTORY, HISTORY_FILE_NAME
+        )
         with open(history_file_path, "w") as f:
             json.dump(self.network_history, f)
 
@@ -332,7 +344,9 @@ class MainWindow:
         return subWindow
 
     # creates entry widgets to select and copy text
-    def selectable_text(self, frame, text, justify="left", font="TkDefaultFont"):
+    def selectable_text(
+        self, frame, text, justify="left", font="TkDefaultFont"
+    ):
         entry = tk.Entry(
             frame,
             relief=tk.FLAT,
@@ -397,17 +411,23 @@ class MainWindow:
             try:
                 if self.is_on_network(network_id):
                     join_result = "You're already a member of this network."
-                    messagebox.showinfo(icon="info", message=join_result)
+                    messagebox.showinfo(
+                        icon="info", message=join_result, parent=join_window
+                    )
                     return
                 check_output(["zerotier-cli", "join", network_id])
                 join_result = "Successfully joined network"
                 self.add_network_to_history(network_id)
-                messagebox.showinfo(icon="info", message=join_result)
+                messagebox.showinfo(
+                    icon="info", message=join_result, parent=join_window
+                )
                 self.refresh_networks()
                 join_window.destroy()
             except CalledProcessError:
                 join_result = "Invalid network ID"
-                messagebox.showinfo(icon="error", message=join_result)
+                messagebox.showinfo(
+                    icon="error", message=join_result, parent=join_window
+                )
 
         def populate_network_list():
             network_history_list.delete(*network_history_list.get_children())
@@ -470,7 +490,12 @@ class MainWindow:
             middle_frame, bg=BACKGROUND, fg=FOREGROUND, text="Network History"
         )
         right_frame = tk.LabelFrame(
-            middle_frame, bg=BACKGROUND, fg=FOREGROUND, text="Info", padx=10, pady=10
+            middle_frame,
+            bg=BACKGROUND,
+            fg=FOREGROUND,
+            text="Info",
+            padx=10,
+            pady=10,
         )
         bottom_frame = tk.Frame(main_frame, bg=BACKGROUND)
 
@@ -480,13 +505,21 @@ class MainWindow:
             command=lambda: join_network(network_entry_value.get()),
         )
         delete_history_entry_button = self.formatted_buttons(
-            bottom_frame, text="Delete history entry", command=delete_history_entry
+            bottom_frame,
+            text="Delete history entry",
+            command=delete_history_entry,
         )
 
-        join_title = tk.Label(main_frame, text="Join Network", font="Monospace")
+        join_title = tk.Label(
+            main_frame, text="Join Network", font="Monospace"
+        )
         network_history_list = TreeView(left_frame, "Network")
-        network_history_scrollbar = tk.Scrollbar(left_frame, bd=2, bg=BACKGROUND)
-        network_history_list.config(yscrollcommand=network_history_scrollbar.set)
+        network_history_scrollbar = tk.Scrollbar(
+            left_frame, bd=2, bg=BACKGROUND
+        )
+        network_history_list.config(
+            yscrollcommand=network_history_scrollbar.set
+        )
         network_history_scrollbar.config(command=network_history_list.yview)
 
         network_history_list.style.configure(
@@ -497,13 +530,18 @@ class MainWindow:
         )
         network_history_list.column("Network", width=300)
         network_history_list.bind("<<TreeviewSelect>>", on_network_selected)
-        network_history_list.bind("<Double-Button-1>", lambda _a: join_button.invoke())
+        network_history_list.bind(
+            "<Double-Button-1>", lambda _a: join_button.invoke()
+        )
 
         join_label = tk.Label(
             bottom_frame, text="Network ID:", bg=BACKGROUND, fg=FOREGROUND
         )
         join_entry = tk.Entry(
-            bottom_frame, width=20, font="Monospace", textvariable=network_entry_value
+            bottom_frame,
+            width=20,
+            font="Monospace",
+            textvariable=network_entry_value,
         )
 
         network_id_label = tk.Label(
@@ -588,7 +626,9 @@ class MainWindow:
         # frames
         topFrame = tk.Frame(statusWindow, padx=20, pady=30, bg=BACKGROUND)
         middleFrame = tk.Frame(statusWindow, padx=20, pady=10, bg=BACKGROUND)
-        bottomTopFrame = tk.Frame(statusWindow, padx=20, pady=10, bg=BACKGROUND)
+        bottomTopFrame = tk.Frame(
+            statusWindow, padx=20, pady=10, bg=BACKGROUND
+        )
         bottomFrame = tk.Frame(statusWindow, padx=20, pady=10, bg=BACKGROUND)
 
         # widgets
@@ -669,7 +709,9 @@ class MainWindow:
         statusWindow.mainloop()
 
     def get_interface_state(self, interface):
-        interfaceInfo = json.loads(check_output(["ip", "--json", "address"]).decode())
+        interfaceInfo = json.loads(
+            check_output(["ip", "--json", "address"]).decode()
+        )
         for info in interfaceInfo:
             if info["ifname"] == interface:
                 state = info["operstate"]
@@ -695,7 +737,9 @@ class MainWindow:
         state = self.get_interface_state(currentNetworkInterface)
 
         if state.lower() == "down":
-            check_output(["pkexec", "ip", "link", "set", currentNetworkInterface, "up"])
+            check_output(
+                ["pkexec", "ip", "link", "set", currentNetworkInterface, "up"]
+            )
         else:
             check_output(
                 [
@@ -714,7 +758,9 @@ class MainWindow:
         try:
             idInList = int(peerList.focus())
         except TypeError:
-            messagebox.showinfo(icon="info", title="Error", message="No peer selected")
+            messagebox.showinfo(
+                icon="info", title="Error", message="No peer selected"
+            )
             return
 
         info = peerList.item(idInList)
@@ -795,7 +841,9 @@ class MainWindow:
 
         # widgets
         peersListScrollbar = tk.Scrollbar(middleFrame, bd=2, bg=BACKGROUND)
-        peersList = TreeView(middleFrame, "ZT Address", "Version", "Role", "Latency")
+        peersList = TreeView(
+            middleFrame, "ZT Address", "Version", "Role", "Latency"
+        )
         peersList.bind("<Double-Button-1>", call_see_peer_paths)
 
         closeButton = self.formatted_buttons(
@@ -954,7 +1002,9 @@ class MainWindow:
         deviceLabel = self.selectable_text(
             middleFrame,
             font="Monospace",
-            text="{:25s}{}".format("Device:", currentNetworkInfo["portDeviceName"]),
+            text="{:25s}{}".format(
+                "Device:", currentNetworkInfo["portDeviceName"]
+            ),
         )
         bridgeLabel = tk.Label(
             middleFrame,
@@ -1139,7 +1189,9 @@ class TreeView(ttk.Treeview):
         self.style = ttk.Style()
         self.style.configure("Treeview.Heading", font=("Monospace", 11))
         self.style.configure("Treeview", font=("Monospace", 11))
-        self.style.layout("Treeview", [("Treeview.treearea", {"sticky": "nswe"})])
+        self.style.layout(
+            "Treeview", [("Treeview.treearea", {"sticky": "nswe"})]
+        )
         self.tag_configure("odd", background="#fcfcfc")
         self.tag_configure("even", background="#eeeeee")
         self.tag_configure("disabled", background="#d14444")
@@ -1149,7 +1201,9 @@ class TreeView(ttk.Treeview):
         tag = "even" if item_count % 2 == 0 else "odd"
         if disabled:
             tag = "disabled"
-        super().insert("", tk.END, iid=item_count, values=values, tags=tag, **kwargs)
+        super().insert(
+            "", tk.END, iid=item_count, values=values, tags=tag, **kwargs
+        )
 
 
 def manage_service(action):

@@ -43,8 +43,10 @@ HISTORY_FILE_DIRECTORY = path.expanduser("~/.local/share/zerotier-gui")
 HISTORY_FILE_NAME = "network_history.json"
 
 
-class MainWindow:
-    def __init__(self):
+class View:
+    def __init__(self, controller):
+        self.controller = controller
+
         self.load_network_history()
 
         self.window = tk.Tk(className="zerotier-gui")
@@ -164,6 +166,10 @@ class MainWindow:
 
         self.networkList.config(yscrollcommand=self.networkListScrollbar.set)
         self.networkListScrollbar.config(command=self.networkList.yview)
+
+    def main(self):
+        self.window.protocol("WM_DELETE_WINDOW", self.on_exit)
+        self.window.mainloop()
 
     def load_network_history(self):
         history_file_path = path.join(
@@ -1294,9 +1300,4 @@ if __name__ == "__main__":
             print("ZeroTier isn't installed", file=sys.stderr)
             _exit(127)
         break
-    # destroy temporary window
     tmp.destroy()
-    # create mainwindow class and execute the mainloop
-    mainWindow = MainWindow()
-    mainWindow.window.protocol("WM_DELETE_WINDOW", mainWindow.on_exit)
-    mainWindow.window.mainloop()

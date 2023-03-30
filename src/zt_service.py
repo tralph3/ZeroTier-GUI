@@ -1,13 +1,26 @@
 import requests
 import os
+import dbus
 
 
 class ZTService():
     """This class is in charge of talking to the ZeroTier service via
     the ZeroTier API"""
+    SERVICE_NOT_RUNNING_CODE = 1
+    NO_ZT_ACCESS_CODE = 2
+    ZT_NOT_INSTALLED_CODE = 127
+
     def __init__(self) -> None:
-        self.auth_token_path = os.path.expanduser("~/.zeroTierOneAuthToken")
+        self.set_auth_token_path("~/.zeroTierOneAuthToken")
         self.zt_base_url = "http://localhost:9993"
+
+    def setup_systemd_dbus_connection(self):
+        bus = dbus.SystemBus()
+        systemd1 = bus.get_object('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
+        self.manager = dbus.Interface(systemd1, 'org.freedesktop.systemd1.Manager')
+
+    def set_auth_token_path(self, auth_token_path: str) -> None:
+        self.auth_token_path = os.path.expanduser(auth_token_path)
 
     def make_get_request(self, path: str) -> requests.Response:
         """Makes a get request to the ZeroTier API. PATH is the url
@@ -62,3 +75,11 @@ class ZTService():
             return True
         except requests.exceptions.ConnectionError:
             return False
+
+    def turn_on(self) -> None:
+        """Turns on the zerotier-one service"""
+        self.manager.StartUnit('zerotier-one.service', 'replace')
+
+    def turn_off(self) -> None:
+        """Turns off the zerotier-one service"""
+        self.manager.StopUnit('zerotier-one.service', 'replace')

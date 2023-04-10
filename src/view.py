@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 from widgets import Button, Frame, Label, Scrollbar, TreeView
 
 
@@ -9,6 +9,7 @@ class View(tk.Tk):
         self.make_main_window()
 
     def main(self) -> None:
+        self.controller.fetch_updated_networks()
         self.mainloop()
 
     def ask_to_turn_on_service(self) -> bool:
@@ -50,7 +51,7 @@ class View(tk.Tk):
         refreshButton = Button(
             topFrame,
             text="Refresh Networks",
-            command=print,
+            command=self.controller.fetch_updated_networks,
         )
         aboutButton = Button(
             topFrame, text="About", command=print
@@ -139,13 +140,10 @@ class View(tk.Tk):
             identifier = network["id"]
             name = network["name"]
             status = network["status"]
-
-            # interfaceState = self.get_interface_state(
-            #     networks[networkPosition]["portDeviceName"]
-            # )
-            # isDown = interfaceState.lower() == "down"
+            interface_is_down = self.controller.is_network_interface_down(
+                network["portDeviceName"])
             if not name:
                 name = "Unknown Name"
             self.networkList.insert(
-                (identifier, name, status), #isDown
+                (identifier, name, status), interface_is_down
             )

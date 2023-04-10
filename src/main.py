@@ -2,6 +2,8 @@ from zt_service import ZTService
 from view import View
 from startup import Startup
 import os
+import json
+import subprocess
 
 
 class Controller():
@@ -43,6 +45,12 @@ class Controller():
         networks = self.zt_service.get_networks()
         self.view.update_network_list(networks)
 
+    def is_network_interface_down(self, interface_name: str) -> bool:
+        interface_info = json.loads(
+            subprocess.check_output(
+                ["ip", "--json", "link", "show", interface_name]).decode())[0]
+        state = interface_info["operstate"]
+        return state.lower() == "down"
 
 if __name__ == "__main__":
     Controller().main()

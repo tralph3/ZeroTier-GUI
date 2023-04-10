@@ -43,87 +43,87 @@ class View(tk.Tk):
         the main window"""
         self.configure_main_window()
 
-        topFrame = Frame(self, padx=20, pady=10)
-        middleFrame = Frame(self, padx=20)
-        bottomFrame = Frame(self, padx=20, pady=10)
+        top_frame = Frame(self, padx=20, pady=10)
+        middle_frame = Frame(self, padx=20)
+        bottom_frame = Frame(self, padx=20, pady=10)
 
-        networkLabel = Label(topFrame, text="Joined Networks:")
-        refreshButton = Button(
-            topFrame,
+        network_label = Label(top_frame, text="Joined Networks:")
+        refresh_button = Button(
+            top_frame,
             text="Refresh Networks",
             command=self.controller.fetch_updated_networks,
         )
-        aboutButton = Button(
-            topFrame, text="About", command=print
+        about_button = Button(
+            top_frame, text="About", command=print
         )
-        peersButton = Button(
-            topFrame, text="Show Peers", command=print
+        peers_button = Button(
+            top_frame, text="Show Peers", command=print
         )
-        joinButton = Button(
-            topFrame,
+        join_button = Button(
+            top_frame,
             text="Join Network",
             command=print
         )
 
-        networkListScrollbar = Scrollbar(middleFrame)
+        network_list_scrollbar = Scrollbar(middle_frame)
 
-        self.networkList = TreeView(
-            middleFrame, "Network ID", "Name", "Status"
+        self.network_list = TreeView(
+            middle_frame, "Network ID", "Name", "Status"
         )
-        self.networkList.column("Network ID", width=40)
-        self.networkList.column("Status", width=40)
+        self.network_list.column("Network ID", width=40)
+        self.network_list.column("Status", width=40)
 
-        self.networkList.bind("<Double-Button-1>", print)
+        self.network_list.bind("<Double-Button-1>", print)
 
-        leaveButton = Button(
-            bottomFrame,
+        leave_network_button = Button(
+            bottom_frame,
             text="Leave Network",
             command=print
         )
-        ztCentralButton = Button(
-            bottomFrame,
+        zt_central_button = Button(
+            bottom_frame,
             text="ZeroTier Central",
             command=print
         )
-        toggleConnectionButton = Button(
-            bottomFrame,
+        toggle_connection_button = Button(
+            bottom_frame,
             text="Disconnect/Connect Interface",
             command=print
         )
-        toggleServiceButton = Button(
-            bottomFrame,
+        toggle_service_button = Button(
+            bottom_frame,
             text="Toggle ZT Service",
             command=print
         )
-        serviceStatusLabel = Label(bottomFrame)
+        service_status_label = Label(bottom_frame)
         infoButton = Button(
-            bottomFrame,
+            bottom_frame,
             text="Network Info",
             command=print
         )
 
-        networkLabel.pack(side="left", anchor="sw")
-        refreshButton.pack(side="right", anchor="se")
-        aboutButton.pack(side="right", anchor="sw")
-        peersButton.pack(side="right", anchor="sw")
-        joinButton.pack(side="right", anchor="se")
+        network_label.pack(side="left", anchor="sw")
+        refresh_button.pack(side="right", anchor="se")
+        about_button.pack(side="right", anchor="sw")
+        peers_button.pack(side="right", anchor="sw")
+        join_button.pack(side="right", anchor="se")
 
-        networkListScrollbar.pack(side="right", fill="both")
-        self.networkList.pack(side="bottom", fill="x")
+        network_list_scrollbar.pack(side="right", fill="both")
+        self.network_list.pack(side="bottom", fill="x")
 
-        leaveButton.pack(side="left", fill="x")
-        toggleConnectionButton.pack(side="left", fill="x")
+        leave_network_button.pack(side="left", fill="x")
+        toggle_connection_button.pack(side="left", fill="x")
         infoButton.pack(side="right", fill="x")
-        ztCentralButton.pack(side="right", fill="x")
-        toggleServiceButton.pack(side="right", fill="x")
-        serviceStatusLabel.pack(side="right", fill="x", padx=(100, 0))
+        zt_central_button.pack(side="right", fill="x")
+        toggle_service_button.pack(side="right", fill="x")
+        service_status_label.pack(side="right", fill="x", padx=(100, 0))
 
-        topFrame.pack(side="top", fill="x")
-        middleFrame.pack(side="top", fill="x")
-        bottomFrame.pack(side="top", fill="x")
+        top_frame.pack(side="top", fill="x")
+        middle_frame.pack(side="top", fill="x")
+        bottom_frame.pack(side="top", fill="x")
 
-        self.networkList.config(yscrollcommand=networkListScrollbar.set)
-        networkListScrollbar.config(command=self.networkList.yview)
+        self.network_list.config(yscrollcommand=network_list_scrollbar.set)
+        network_list_scrollbar.config(command=self.network_list.yview)
 
     def configure_main_window(self) -> None:
         """Configures the main window itself"""
@@ -134,7 +134,7 @@ class View(tk.Tk):
     def update_network_list(self, networks: list) -> None:
         """Updates the network list widget with the given NETWORKS
         argument. Ideally, these should be more up to date"""
-        self.networkList.delete(*self.networkList.get_children())
+        self.network_list.delete(*self.network_list.get_children())
 
         for network in networks:
             identifier = network["id"]
@@ -144,6 +144,6 @@ class View(tk.Tk):
                 network["portDeviceName"])
             if not name:
                 name = "Unknown Name"
-            self.networkList.insert(
+            self.network_list.insert(
                 (identifier, name, status), interface_is_down
             )

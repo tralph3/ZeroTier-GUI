@@ -24,7 +24,7 @@ class Controller():
         handler_mappings = {
             ErrorCode.ZT_SERVICE_NOT_RUNNING: self.handle_service_not_running,
             ErrorCode.ZT_NO_ACCESS_TOKEN: self.handle_no_access_token,
-            ErrorCode.ZT_NOT_INSTALLED: self.handle_zt_not_installed
+            ErrorCode.ZT_NOT_INSTALLED: self.handle_zt_not_installed,
         }
         handler_mappings[zt_exit_code]()
 
@@ -32,18 +32,18 @@ class Controller():
         if self.view.ask_to_turn_on_service():
             self.zt_service.turn_on()
         else:
-            os._exit(self.zt_service.SERVICE_NOT_RUNNING_CODE)
+            os._exit(ErrorCode.ZT_SERVICE_NOT_RUNNING)
 
     def handle_no_access_token(self):
         self.view.warn_no_access_token()
         if self.view.ask_to_run_as_root():
             self.startup.copy_access_token()
         else:
-            os._exit(self.zt_service.NO_ZT_ACCESS_CODE)
+            os._exit(ErrorCode.ZT_NO_ACCESS_TOKEN)
 
     def handle_zt_not_installed(self):
         self.view.warn_zt_not_installed()
-        os._exit(self.zt_service.ZT_NOT_INSTALLED_CODE)
+        os._exit(ErrorCode.ZT_NOT_INSTALLED)
 
     def handle_status_codes(self, status_code: int) -> None:
         if status_code == StatusCode.OK:

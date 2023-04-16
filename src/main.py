@@ -1,6 +1,7 @@
 from zt_service import ZTService
 from view import View
 from startup import Startup
+from error_codes import ErrorCode
 import os
 import json
 import subprocess
@@ -18,12 +19,12 @@ class Controller():
 
     def make_preliminary_checks(self) -> None:
         zt_exit_code = self.startup.get_zt_cli_exit_code()
-        if zt_exit_code == self.zt_service.SERVICE_NOT_RUNNING_CODE:
-            self.handle_service_not_running()
-        elif zt_exit_code == self.zt_service.NO_ZT_ACCESS_CODE:
-            self.handle_no_access_token()
-        elif zt_exit_code == self.zt_service.ZT_NOT_INSTALLED_CODE:
-            self.handle_zt_not_installed()
+        handler_mappings = {
+            ErrorCode.ZT_SERVICE_NOT_RUNNING: self.handle_service_not_running,
+            ErrorCode.ZT_NO_ACCESS_TOKEN: self.handle_no_access_token,
+            ErrorCode.ZT_NOT_INSTALLED: self.handle_zt_not_installed
+        }
+        handler_mappings[zt_exit_code]()
 
     def handle_service_not_running(self):
         if self.view.ask_to_turn_on_service():

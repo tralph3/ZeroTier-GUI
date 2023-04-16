@@ -73,22 +73,13 @@ class ZTService():
     def get_peers(self) -> dict:
         return self.make_get_request("peer").json()
 
-    def is_active(self) -> bool:
-        """Determines if the zerotier-one service is currently
-        running"""
+    def is_zerotier_service_running(self) -> bool:
         try:
             requests.get(self.zt_base_url)
             return True
         except requests.exceptions.ConnectionError:
             return False
 
-    def turn_on(self) -> None:
-        """Turns on the zerotier-one service"""
-        self.manager.StartUnit('zerotier-one.service', 'replace')
-
-    def turn_off(self) -> None:
-        """Turns off the zerotier-one service"""
-        self.manager.StopUnit('zerotier-one.service', 'replace')
     def turn_zerotier_service_on(self) -> None:
         self.systemd_interface.StartUnit('zerotier-one.service', 'replace')
 

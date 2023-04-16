@@ -31,6 +31,13 @@ class View(tk.Tk):
             "program as root. Grant access?",
         )
 
+    def warn_no_access_token(self) -> None:
+        messagebox.showerror(
+            title="Error",
+            message="The access token for this user is not present or couldn't be found.",
+            icon="error",
+        )
+
     def warn_zt_not_installed(self) -> None:
         messagebox.showerror(
             title="Error",

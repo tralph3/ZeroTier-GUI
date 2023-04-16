@@ -33,6 +33,7 @@ class Controller():
             os._exit(self.zt_service.SERVICE_NOT_RUNNING_CODE)
 
     def handle_no_access_token(self):
+        self.view.warn_no_access_token()
         if self.view.ask_to_run_as_root():
             self.startup.copy_access_token()
         else:

@@ -154,3 +154,6 @@ class View(tk.Tk):
             self.network_list.insert(
                 (identifier, name, status), interface_is_down
             )
+
+    def join_network(self, network_id: str) -> None:
+        self.controller.join_network(network_id)

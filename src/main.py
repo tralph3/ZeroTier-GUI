@@ -64,5 +64,18 @@ class Controller():
         state = interface_info["operstate"]
         return state.lower() == "down"
 
+    def leave_network(self, network_id: str):
+        self.zt_service.leave_network(network_id)
+        self.view.show_network_left_successfully()
+        self.fetch_updated_networks()
+
+    def join_network(self, network_id: str):
+        if self.zt_service.is_joined_to_network(network_id):
+            self.view.warn_already_joined_to_network()
+            return
+        self.handle_status_codes(self.zt_service.join_network(network_id))
+        self.fetch_updated_networks()
+
+
 if __name__ == "__main__":
     Controller().main()

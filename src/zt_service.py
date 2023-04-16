@@ -19,7 +19,7 @@ class ZTService():
     def setup_systemd_dbus_connection(self):
         bus = dbus.SystemBus()
         systemd1 = bus.get_object('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
-        self.manager = dbus.Interface(systemd1, 'org.freedesktop.systemd1.Manager')
+        self.systemd_interface = dbus.Interface(systemd1, 'org.freedesktop.systemd1.Manager')
 
     def set_auth_token_path(self, auth_token_path: str) -> None:
         self.auth_token_path = os.path.expanduser(auth_token_path)
@@ -85,3 +85,8 @@ class ZTService():
     def turn_off(self) -> None:
         """Turns off the zerotier-one service"""
         self.manager.StopUnit('zerotier-one.service', 'replace')
+    def turn_zerotier_service_on(self) -> None:
+        self.systemd_interface.StartUnit('zerotier-one.service', 'replace')
+
+    def turn_zerotier_service_off(self) -> None:
+        self.systemd_interface.StopUnit('zerotier-one.service', 'replace')

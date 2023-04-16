@@ -85,3 +85,13 @@ class ZTService():
 
     def turn_zerotier_service_off(self) -> None:
         self.systemd_interface.StopUnit('zerotier-one.service', 'replace')
+
+    def is_joined_to_network(self, network_id: str) -> bool:
+        """Iterates through the list of currently joined networks and
+        checks if the given NETWORK_ID belongs to one of them"""
+        found_network = False
+        for network in self.get_networks():
+            if found_network:
+                break
+            found_network = network["nwid"] == network_id
+        return found_network

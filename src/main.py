@@ -25,6 +25,7 @@ class Controller():
             ErrorCode.ZT_SERVICE_NOT_RUNNING: self.handle_service_not_running,
             ErrorCode.ZT_NO_ACCESS_TOKEN: self.handle_no_access_token,
             ErrorCode.ZT_NOT_INSTALLED: self.handle_zt_not_installed,
+            ErrorCode.OK: lambda: None,
         }
         handler_mappings[zt_exit_code]()
 

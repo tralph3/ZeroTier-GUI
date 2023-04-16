@@ -64,11 +64,11 @@ class ZTService():
             return None
         return response.json()
 
-    def join_network(self, network_id: str) -> None:
-        self.make_post_request(f"network/{network_id}")
+    def join_network(self, network_id: str) -> int:
+        return self.make_post_request(f"network/{network_id}").status_code
 
-    def leave_network(self, network_id: str) -> None:
-        self.make_del_request(f"network/{network_id}")
+    def leave_network(self, network_id: str) -> int:
+        return self.make_del_request(f"network/{network_id}").status_code
 
     def get_peers(self) -> dict:
         return self.make_get_request("peer").json()

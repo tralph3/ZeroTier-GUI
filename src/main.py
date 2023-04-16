@@ -1,7 +1,9 @@
 from zt_service import ZTService
 from view import View
 from startup import Startup
+from status_codes import StatusCode
 from error_codes import ErrorCode
+import sys
 import os
 import json
 import subprocess
@@ -42,6 +44,14 @@ class Controller():
     def handle_zt_not_installed(self):
         self.view.warn_zt_not_installed()
         os._exit(self.zt_service.ZT_NOT_INSTALLED_CODE)
+
+    def handle_status_codes(self, status_code: int) -> None:
+        if status_code == StatusCode.OK:
+            return
+        elif status_code == StatusCode.AUTHORIZATION_REQUIRED:
+            self.view.warn_no_access_token()
+        else:
+            print(f"Unrecognized status code: {status_code}", file=sys.stderr)
 
     def fetch_updated_networks(self):
         networks = self.zt_service.get_networks()

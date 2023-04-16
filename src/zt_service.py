@@ -1,6 +1,7 @@
 import requests
 import os
 import dbus
+from typing import Optional
 
 
 class ZTService():
@@ -55,10 +56,13 @@ class ZTService():
         with open(self.auth_token_path, "r") as f:
             return f.read()
 
-    def get_networks(self) -> list[dict]:
+    def get_networks(self) -> Optional[list[dict]]:
         """Returns a list with the currently joined networks
         information"""
-        return self.make_get_request("network").json()
+        response = self.make_get_request("network")
+        if not response.ok:
+            return None
+        return response.json()
 
     def join_network(self, network_id: str) -> None:
         self.make_post_request(f"network/{network_id}")

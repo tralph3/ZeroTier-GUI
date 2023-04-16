@@ -1,8 +1,8 @@
-from zt_service import ZTService
+from modules.zt_service import ZTService
+from modules.startup import Startup
+from codes.exit_codes import ExitCode
+from codes.status_codes import StatusCode
 from view import View
-from startup import Startup
-from status_codes import StatusCode
-from error_codes import ExitCode
 import sys
 import os
 import json
@@ -13,7 +13,7 @@ class Controller():
     def __init__(self) -> None:
         self.startup = Startup()
         self.zt_service = ZTService()
-        self.view = View(self)
+        self.view = View()
 
     def main(self) -> None:
         self.make_preliminary_checks()

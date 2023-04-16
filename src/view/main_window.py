@@ -8,10 +8,10 @@ class MainWindow(tk.Tk):
         self.make_main_window()
 
     def make_main_window(self) -> None:
-        """Creates, configures and packs all the required widgets for
-        the main window"""
         self.configure_main_window()
+        self.create_and_pack_widgets()
 
+    def create_and_pack_widgets(self):
         top_frame = Frame(self, padx=20, pady=10)
         middle_frame = Frame(self, padx=20)
         bottom_frame = Frame(self, padx=20, pady=10)
@@ -95,7 +95,6 @@ class MainWindow(tk.Tk):
         network_list_scrollbar.config(command=self.network_list.yview)
 
     def configure_main_window(self) -> None:
-        """Configures the main window itself"""
         super().__init__(className="zerotier-gui")
         self.title("ZeroTier-GUI")
         self.resizable(width=False, height=False)

@@ -48,3 +48,6 @@ class View():
             message="You're already a member of this network.",
             icon="info",
         )
+
+    def set_networks_in_list(self, networks: list) -> None:
+        self.main_window.update_network_list(networks)

@@ -61,7 +61,7 @@ class Controller():
 
     def fetch_updated_networks(self):
         networks = self.zt_service.get_networks()
-        self.view.main_window.update_network_list(networks)
+        self.view.set_networks_in_list(networks)
 
     def is_network_interface_down(self, interface_name: str) -> bool:
         interface_info = json.loads(

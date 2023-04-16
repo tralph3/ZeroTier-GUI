@@ -1,7 +1,7 @@
 from enum import IntEnum
 
 
-class ErrorCode(IntEnum):
+class ExitCode(IntEnum):
     OK = 0
     ZT_SERVICE_NOT_RUNNING = 1
     ZT_NO_ACCESS_TOKEN = 2

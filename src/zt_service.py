@@ -11,8 +11,10 @@ class ZTService():
     ZT_NOT_INSTALLED_CODE = 127
 
     def __init__(self) -> None:
+        zt_host = "localhost"
+        zt_port = 9993
         self.set_auth_token_path("~/.zeroTierOneAuthToken")
-        self.zt_base_url = "http://localhost:9993"
+        self.zt_base_url = f"http://{zt_host}:{zt_port}"
 
     def setup_systemd_dbus_connection(self):
         bus = dbus.SystemBus()

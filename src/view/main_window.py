@@ -1,5 +1,6 @@
 import tkinter as tk
 from .widgets import Button, Frame, Label, Scrollbar, TreeView
+from events import Event, emit_event
 
 
 class MainWindow(tk.Tk):
@@ -19,7 +20,7 @@ class MainWindow(tk.Tk):
         refresh_button = Button(
             top_frame,
             text="Refresh Networks",
-            command=self.controller.fetch_updated_networks,
+            command=lambda *_: emit_event(Event.REFRESH_NETWORKS)
         )
         about_button = Button(
             top_frame, text="About", command=print
@@ -108,13 +109,14 @@ class MainWindow(tk.Tk):
             identifier = network["id"]
             name = network["name"]
             status = network["status"]
-            interface_is_down = self.controller.is_network_interface_down(
-                network["portDeviceName"])
+            interface_is_down = False
+#            interface_is_down = self.controller.is_network_interface_down(
+#                network["portDeviceName"])
             if not name:
                 name = "Unknown Name"
             self.network_list.insert(
                 (identifier, name, status), interface_is_down
             )
 
-    def join_network(self, network_id: str) -> None:
-        self.controller.join_network(network_id)
+#    def join_network(self, network_id: str) -> None:
+#        self.controller.join_network(network_id)

@@ -1,10 +1,12 @@
 from tkinter import messagebox
 from .main_window import MainWindow
+from events import Event, emit_event
 
 
 class View():
     def main(self) -> None:
         self.main_window = MainWindow()
+        emit_event(Event.REFRESH_NETWORKS)
         self.main_window.mainloop()
 
     def ask_to_turn_on_service(self) -> bool:

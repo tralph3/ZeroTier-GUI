@@ -3,6 +3,7 @@ from modules.startup import Startup
 from codes.exit_codes import ExitCode
 from codes.status_codes import StatusCode
 from view import View
+from events import Event, attach_to_event
 import sys
 import os
 import json
@@ -11,9 +12,13 @@ import subprocess
 
 class Controller():
     def __init__(self) -> None:
+        self.attach_to_events()
         self.startup = Startup()
         self.zt_service = ZTService()
         self.view = View()
+
+    def attach_to_events(self):
+        attach_to_event(Event.REFRESH_NETWORKS, self.fetch_updated_networks)
 
     def main(self) -> None:
         self.make_preliminary_checks()
@@ -56,7 +61,7 @@ class Controller():
 
     def fetch_updated_networks(self):
         networks = self.zt_service.get_networks()
-        self.view.update_network_list(networks)
+        self.view.main_window.update_network_list(networks)
 
     def is_network_interface_down(self, interface_name: str) -> bool:
         interface_info = json.loads(

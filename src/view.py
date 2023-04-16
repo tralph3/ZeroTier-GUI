@@ -41,8 +41,15 @@ class View(tk.Tk):
     def warn_zt_not_installed(self) -> None:
         messagebox.showerror(
             title="Error",
-            message="ZeroTier isn't installed!",
+            message="ZeroTier isn't installed.",
             icon="error",
+        )
+
+    def warn_already_joined_to_network(self) -> None:
+        messagebox.showerror(
+            title="Already joined",
+            message="You're already a member of this network.",
+            icon="info",
         )
 
     def make_main_window(self) -> None:

@@ -7,10 +7,6 @@ from typing import Optional
 class ZTService():
     """This class is in charge of talking to the ZeroTier service via
     the ZeroTier API"""
-    SERVICE_NOT_RUNNING_CODE = 1
-    NO_ZT_ACCESS_CODE = 2
-    ZT_NOT_INSTALLED_CODE = 127
-
     def __init__(self) -> None:
         zt_host = "localhost"
         zt_port = 9993

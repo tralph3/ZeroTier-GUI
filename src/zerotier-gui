@@ -33,6 +33,7 @@ from os import getuid, system, _exit, path, makedirs
 from webbrowser import open_new_tab
 import sys
 from datetime import datetime
+import textwrap
 
 BACKGROUND = "#d9d9d9"
 FOREGROUND = "black"
@@ -1213,34 +1214,56 @@ def manage_service(action):
         check_output(["systemctl", "stop", "zerotier-one"])
 
 
-# automates the process of copying the auth token
-def auth_token_setup():
-    if getuid() != 0:
-        # get username
-        username = check_output(["whoami"]).decode()
-        username = username.replace("\n", "")
-        allowed_to_run_as_root = messagebox.askyesno(
+def setup_auth_token():
+    if getuid() == 0:
+        return
+    if not path.isfile("/var/lib/zerotier-one/authtoken.secret"):
+        allowed_to_start_service = messagebox.askyesno(
             icon="info",
-            title="Root access needed",
-            message=f"In order to grant {username} permission "
-            "to use ZeroTier we need temporary root access to "
-            "store the Auth Token in your home folder. "
-            "Otherwise, you would need to run this "
-            "program as root. Grant access?",
-        )
-        if allowed_to_run_as_root:
-            # copy auth token to home directory and make the user own it
-            system(
-                f"pkexec bash -c "
-                '"cp /var/lib/zerotier-one/authtoken.secret '
-                f"/home/{username}/.zeroTierOneAuthToken && "
-                f"chown {username}:{username} "
-                f"/home/{username}/.zeroTierOneAuthToken && "
-                "chmod 0600 "
-                f'/home/{username}/.zeroTierOneAuthToken"'
+            title="No authtoken found",
+            message=textwrap.dedent(
+                """\
+                No authtoken.secret file has been found in
+                "/var/lib/zerotier-one". This usually means you
+                never started the zerotier-one service.
+                Do you wish to start it now?
+                """
             )
+        )
+        if allowed_to_start_service:
+            manage_service("start")
         else:
             _exit(0)
+    username = check_output(["whoami"]).decode().strip()
+    allowed_to_run_as_root = messagebox.askyesno(
+        icon="info",
+        title="Root access needed",
+        message=f"In order to grant {username} permission "
+        "to use ZeroTier we need temporary root access to "
+        "add them to the zerotier-one group and change the "
+        "auth-token permissions in /var/lib/zerotier-one. "
+        "Otherwise, you would need to run this "
+        "program as root. Grant access?",
+    )
+    if allowed_to_run_as_root:
+        system(textwrap.dedent(
+            f"""\
+            pkexec bash -c "usermod -aG zerotier-one {username} &&
+            chmod 660 /var/lib/zerotier-one/authtoken.secret &&
+            chmod 660 /var/lib/zerotier-one/identity.secret"
+            """
+        ))
+        messagebox.showinfo(
+            title="Success",
+            message=textwrap.dedent(
+                """\
+                You were successfully added to the zerotier-one
+                group. If you're still having problems, you may need
+                to re-login in order for the changes to take effect.
+                """
+            )
+        )
+    _exit(0)
 
 
 if __name__ == "__main__":
@@ -1261,7 +1284,7 @@ if __name__ == "__main__":
                     icon="error",
                     message="This user doesn't have access to ZeroTier!",
                 )
-                auth_token_setup()
+                setup_auth_token()
                 continue
             # service not running
             if error.returncode == 1:
